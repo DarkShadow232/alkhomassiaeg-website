@@ -1,0 +1,81 @@
+{
+  "source_clips": [
+    {
+      "clip": 1,
+      "source": "C:\\Users\\Omar Mohamed Pa\u015fa\\Desktop\\New folder (3)\\website\\1.mp4",
+      "bytes": 10943340,
+      "sha256": "7b1a9b477d39309243f74c46901e27465ac3de9a04eda080d063ba406346bb56",
+      "width": 1280,
+      "height": 720,
+      "fps": 24.0,
+      "source_frames": 193,
+      "duration_seconds": 8.041666666666666
+    },
+    {
+      "clip": 2,
+      "source": "C:\\Users\\Omar Mohamed Pa\u015fa\\Desktop\\New folder (3)\\website\\2.mp4",
+      "bytes": 10502774,
+      "sha256": "9e98e3c5b761a4453ba0d971b3d4c4e1411b89681c194a1474f216cc8e84556c",
+      "width": 1280,
+      "height": 720,
+      "fps": 24.0,
+      "source_frames": 193,
+      "duration_seconds": 8.041666666666666
+    },
+    {
+      "clip": 3,
+      "source": "C:\\Users\\Omar Mohamed Pa\u015fa\\Desktop\\New folder (3)\\website\\3.mp4",
+      "bytes": 11139781,
+      "sha256": "67d0916ca1660f72007cb74e43d3b0cf7fbc19de42971eba749c5247cd3917ec",
+      "width": 1280,
+      "height": 720,
+      "fps": 24.0,
+      "source_frames": 193,
+      "duration_seconds": 8.041666666666666
+    },
+    {
+      "clip": 4,
+      "source": "C:\\Users\\Omar Mohamed Pa\u015fa\\Desktop\\New folder (3)\\website\\4.mp4",
+      "bytes": 10243425,
+      "sha256": "5cab692d38e40bd751dbf2ae12c6953b20bd625095b68d07b9528ea15dc10e8f",
+      "width": 1108,
+      "height": 828,
+      "fps": 24.0,
+      "source_frames": 193,
+      "duration_seconds": 8.041666666666666
+    }
+  ],
+  "boundaries": [
+    {
+      "from_clip": 1,
+      "to_clip": 2,
+      "mean_absolute_pixel_difference": 8.678,
+      "assessment": "matched"
+    },
+    {
+      "from_clip": 2,
+      "to_clip": 3,
+      "mean_absolute_pixel_difference": 2.942,
+      "assessment": "matched"
+    },
+    {
+      "from_clip": 3,
+      "to_clip": 4,
+      "mean_absolute_pixel_difference": 6.141,
+      "assessment": "matched"
+    }
+  ],
+  "desktop": {
+    "count": 189,
+    "width": 1280,
+    "height": 720,
+    "quality": 80
+  },
+  "mobile": {
+    "count": 93,
+    "width": 720,
+    "height": 1280,
+    "quality": 76
+  },
+  "duplicate_boundary_policy": "first sampled frame removed from clips 2-4"
+}

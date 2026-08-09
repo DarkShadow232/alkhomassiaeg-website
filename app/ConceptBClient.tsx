@@ -12,14 +12,17 @@ const scenes = [
   { id: "exterior", ar: "الاقتراب الخارجي", en: "Exterior approach", lineAr: "من الخارج تبدأ الرؤية", lineEn: "The vision begins outside", image: "/assets/fallbacks/01-exterior.jpg" },
   { id: "entry", ar: "دخول المصنع", en: "Factory entry", lineAr: "خبرة تتحرك داخل كل مرحلة", lineEn: "Experience moves through every stage", image: "/assets/fallbacks/02-entry.jpg" },
   { id: "receiving", ar: "الاستلام والتحضير", en: "Receiving & preparation", lineAr: "استلام وتحضير وفق متطلبات كل تشغيلة", lineEn: "Prepared for every production run", image: "/assets/fallbacks/03-receiving.jpg" },
-  { id: "lab", ar: "مطابقة الألوان", en: "Colour laboratory", lineAr: "مطابقة لون دقيقة قبل الإنتاج", lineEn: "Precise colour matching before production", image: "/assets/fallbacks/04-lab.jpg" },
+  { id: "dyeing-entry", ar: "قاعة الصباغة", en: "Dyeing hall", lineAr: "بيئة تشغيل منظمة لنتائج أكثر اتساقاً", lineEn: "An organised production environment for consistent results", image: "/assets/fallbacks/04-lab.jpg" },
   { id: "dyeing", ar: "الصباغة", en: "Jet dyeing", lineAr: "صباغة متجانسة بحمولات مرنة", lineEn: "Consistent dyeing across flexible loads", image: "/assets/fallbacks/05-dyeing.jpg", factAr: "200–1200 كجم", factEn: "200–1,200 kg" },
-  { id: "stenter", ar: "التجفيف والتثبيت", en: "Drying & heat-setting", lineAr: "تجفيف وتثبيت حراري لثبات الأبعاد", lineEn: "Drying and heat-setting for dimensional stability", image: "/assets/fallbacks/06-stenter.jpg" },
-  { id: "finishing", ar: "التجهيز", en: "Finishing", lineAr: "تجهيز يمنح القماش خواصه النهائية", lineEn: "Finishing gives fabric its final properties", image: "/assets/fallbacks/07-finishing.jpg" },
-  { id: "quality", ar: "الفحص والجودة", en: "Quality control", lineAr: "فحص مستمر من أول متر إلى آخر لفة", lineEn: "Inspection from the first metre to the final roll", image: "/assets/fallbacks/08-quality.jpg" },
-  { id: "warehouse", ar: "مخزن الجاهز", en: "Finished goods", lineAr: "جاهزية منظمة للتسليم", lineEn: "Organised and ready for dispatch", image: "/assets/fallbacks/09-warehouse.jpg", factAr: "+600 طن شهرياً", factEn: "600+ tons monthly" },
-  { id: "dispatch", ar: "التسليم", en: "Dispatch", lineAr: "جاهزون لتجهيز طلبكم القادم", lineEn: "Ready for your next production order", image: "/assets/fallbacks/10-exit.jpg", factAr: "استلام وتسليم 24/7", factEn: "24/7 receiving & delivery" },
+  { id: "control", ar: "التحكم في التشغيل", en: "Process control", lineAr: "كل مرحلة تتحرك تحت متابعة مستمرة", lineEn: "Every stage moves under continuous control", image: "/assets/fallbacks/06-stenter.jpg" },
+  { id: "stenter", ar: "التجفيف والتثبيت", en: "Drying & heat-setting", lineAr: "تجفيف وتثبيت حراري لثبات الأبعاد", lineEn: "Drying and heat-setting for dimensional stability", image: "/assets/fallbacks/07-finishing.jpg" },
+  { id: "finishing", ar: "التجهيز", en: "Finishing", lineAr: "تجهيز يمنح القماش خواصه النهائية", lineEn: "Finishing gives fabric its final properties", image: "/assets/fallbacks/08-quality.jpg" },
+  { id: "rolling", ar: "تدفق القماش", en: "Fabric flow", lineAr: "حركة منتظمة من خط الإنتاج إلى اللفة النهائية", lineEn: "Controlled movement from production line to final roll", image: "/assets/fallbacks/09-warehouse.jpg", factAr: "+600 طن شهرياً", factEn: "600+ tons monthly" },
+  { id: "ready", ar: "القماش الجاهز", en: "Finished fabric", lineAr: "جاهزون لتجهيز طلبكم القادم", lineEn: "Ready for your next production order", image: "/assets/fallbacks/10-exit.jpg", factAr: "استلام وتسليم 24/7", factEn: "24/7 receiving & delivery" },
 ] as const;
+
+const DESKTOP_FRAME_COUNT = 189;
+const MOBILE_FRAME_COUNT = 93;
 
 const copy = {
   ar: {
@@ -28,7 +31,7 @@ const copy = {
     hero: "داخل الخماسية… تتحول الخبرة إلى جودة.",
     heroSub: "جولة عبر مراحل الصباغة والتجهيز من استلام الخام حتى التسليم.",
     explore: "ابدأ الجولة", quote: "اطلب عرض سعر", scroll: "مرّر لتقود الكاميرا",
-    preview: "نسخة معاينة · صور المصنع الحالية",
+    preview: "جولة سينمائية · داخل المصنع",
     filmKicker: "رحلة إنتاج واحدة", filmTitle: "من الخام إلى الجاهز، داخل مصنع واحد.",
     capabilitiesKicker: "قدرات موثقة", capabilitiesTitle: "أرقام تشغيلية، لا وعود عامة.",
     servicesKicker: "منظومة متكاملة", servicesTitle: "كل مرحلة تحت رقابة واحدة.",
@@ -45,7 +48,7 @@ const copy = {
     hero: "Inside Al Khomassia, experience becomes quality.",
     heroSub: "A journey through dyeing and finishing—from raw fabric receiving to dispatch.",
     explore: "Start the tour", quote: "Request a quote", scroll: "Scroll to guide the camera",
-    preview: "Preview · current factory photography",
+    preview: "Cinematic tour · inside the factory",
     filmKicker: "One production journey", filmTitle: "From raw to ready, inside one factory.",
     capabilitiesKicker: "Verified capabilities", capabilitiesTitle: "Operating facts, not broad promises.",
     servicesKicker: "Integrated process", servicesTitle: "Every stage under one system.",
@@ -148,21 +151,24 @@ export default function ConceptBClient() {
 
   useEffect(() => {
     if (reducedMotion) return;
+    const mobile = window.matchMedia("(max-width: 760px)").matches;
+    const frameCount = mobile ? MOBILE_FRAME_COUNT : DESKTOP_FRAME_COUNT;
+    const sequence = mobile ? "sequence-mobile" : "sequence-desktop";
     const loaded: HTMLImageElement[] = [];
     let complete = 0;
     let settled = 0;
-    const threshold = Math.ceil(scenes.length * 0.6);
+    const threshold = Math.ceil(frameCount * 0.6);
     const finish = () => {
       settled += 1;
-      setLoadProgress(Math.round((settled / scenes.length) * 100));
-      if (complete >= threshold || settled === scenes.length) setFilmReady(true);
+      setLoadProgress(Math.round((settled / frameCount) * 100));
+      if (complete >= threshold || settled === frameCount) setFilmReady(true);
     };
-    scenes.forEach((scene, index) => {
+    Array.from({ length: frameCount }).forEach((_, index) => {
       const image = new Image();
       image.decoding = "async";
-      image.onload = () => { complete += 1; finish(); drawFrame(Math.round(progressRef.current * (scenes.length - 1)), loaded); };
+      image.onload = () => { complete += 1; finish(); drawFrame(Math.round(progressRef.current * (frameCount - 1)), loaded); };
       image.onerror = finish;
-      image.src = scene.image;
+      image.src = `/assets/${sequence}/f${String(index).padStart(3, "0")}.jpg`;
       loaded[index] = image;
     });
     imagesRef.current = loaded;
@@ -201,13 +207,14 @@ export default function ConceptBClient() {
       scrub: 0.45,
       onUpdate: (self) => {
         progressRef.current = self.progress;
-        const index = Math.min(scenes.length - 1, Math.round(self.progress * (scenes.length - 1)));
-        setActiveScene(index);
-        drawFrame(index);
+        const frameIndex = Math.min(imagesRef.current.length - 1, Math.round(self.progress * (imagesRef.current.length - 1)));
+        const sceneIndex = Math.min(scenes.length - 1, Math.floor(self.progress * scenes.length));
+        setActiveScene(sceneIndex);
+        drawFrame(frameIndex);
       },
     });
-    drawFrame(Math.round(trigger.progress * (scenes.length - 1)));
-    const onResize = () => { currentFrame.current = -1; drawFrame(Math.round(progressRef.current * (scenes.length - 1))); };
+    drawFrame(Math.round(trigger.progress * (imagesRef.current.length - 1)));
+    const onResize = () => { currentFrame.current = -1; drawFrame(Math.round(progressRef.current * (imagesRef.current.length - 1))); };
     window.addEventListener("resize", onResize);
     return () => { window.removeEventListener("resize", onResize); trigger.kill(); };
   }, [filmReady, reducedMotion]);

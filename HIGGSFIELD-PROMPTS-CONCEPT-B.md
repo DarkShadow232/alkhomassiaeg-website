@@ -1,6 +1,6 @@
 # Higgsfield Prompts — Concept B
 
-Status: prepared, not submitted. Claude CLI authentication and Higgsfield access are blocked; see `public/assets/generation-records/CLAUDE-HIGGSFIELD-BLOCKER.md`.
+Status: retained as the future ten-scene expansion manifest. Claude/Higgsfield access is restored and the K04/K05 Scene 05 keyframe test was completed. The production site now uses the four client-supplied continuous MP4 masters, so no additional paid scene generation was submitted.
 
 ## Locked global specification
 
@@ -163,5 +163,4 @@ After desktop keyframe approval, create purposeful 9:16 K00m–K10m boundaries r
 
 ## Approval record
 
-No keyframe or clip has been marked approved. The first approval gate is K04, K05 and V05 only, after Claude CLI login, Higgsfield authentication and credits are verified.
-
+K04 and K05 were generated as a representative test and preserved outside production delivery. V05 and the remaining generated scenes were not submitted because the client supplied a complete four-clip cinematic route that is now used by the website.

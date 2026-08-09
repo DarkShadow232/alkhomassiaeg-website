@@ -31,12 +31,14 @@ test("server-renders the Arabic-first Concept B site", async () => {
   assert.doesNotMatch(html, /<video\b/i);
 });
 
-test("ships the canvas, accessibility and fallback contracts", async () => {
-  const [client, css, packageJson, fallbackFiles] = await Promise.all([
+test("ships the canvas, accessibility and responsive sequence contracts", async () => {
+  const [client, css, packageJson, fallbackFiles, desktopFrames, mobileFrames] = await Promise.all([
     readFile(new URL("../app/ConceptBClient.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readdir(new URL("../public/assets/fallbacks/", import.meta.url)),
+    readdir(new URL("../public/assets/sequence-desktop/", import.meta.url)),
+    readdir(new URL("../public/assets/sequence-mobile/", import.meta.url)),
   ]);
   assert.match(client, /ScrollTrigger\.create/);
   assert.match(client, /getContext\("2d"\)/);
@@ -49,6 +51,8 @@ test("ships the canvas, accessibility and fallback contracts", async () => {
   assert.match(css, /\.film-stage \{ position: sticky/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
   assert.equal(fallbackFiles.filter((file) => /\.jpg$/i.test(file)).length, 10);
+  assert.equal(desktopFrames.filter((file) => /^f\d{3}\.jpg$/i.test(file)).length, 189);
+  assert.equal(mobileFrames.filter((file) => /^f\d{3}\.jpg$/i.test(file)).length, 93);
   await access(new URL("../CONTENT_AUDIT.md", import.meta.url));
   await access(new URL("../HIGGSFIELD-PROMPTS-CONCEPT-B.md", import.meta.url));
   await access(new URL("../ASSET_MANIFEST.md", import.meta.url));

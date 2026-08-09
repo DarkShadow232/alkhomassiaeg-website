@@ -11,9 +11,18 @@ Last reviewed: 2026-08-09
 | `public/assets/references/visual-identity.png` | Palette, typography and motif reference | Reference only; sample contact details rejected |
 | `public/assets/references/factory/factory-photo-*.jpeg` | Ten selected raw factory references for machinery, scale, architecture and fabric paths | Approved as physical-truth references; not final marketing photography |
 
-## Current website fallbacks
+## Current cinematic media
 
-The ten files under `public/assets/fallbacks/` are existing factory photographs wired to the ten tour chapters. They are deliberately labelled as preview media in the interface. They are not claimed to be the final continuous Higgsfield film.
+The production canvas sequence is extracted from the four client-supplied masters at the workspace root: `1.mp4`, `2.mp4`, `3.mp4`, and `4.mp4`. All four are approximately 8.04 seconds at 24 fps. Their hashes, dimensions and boundary measurements are recorded in `public/assets/generation-records/supplied-clips-sequence.json`.
+
+- Desktop: `public/assets/sequence-desktop/f000.jpg`–`f188.jpg` (189 frames, 1280×720).
+- Mobile: `public/assets/sequence-mobile/f000.jpg`–`f092.jpg` (93 purposeful 9:16 crops, 720×1280).
+- The first sampled frame of clips 2–4 is removed to avoid duplicated boundary frames.
+- All three clip handoffs passed the pixel-continuity check.
+
+## Reduced-motion fallbacks
+
+The ten files under `public/assets/fallbacks/` remain as the static chapter experience for `prefers-reduced-motion` and as safe poster imagery if cinematic frames cannot load.
 
 | Chapter | Fallback | Final replacement |
 |---|---|---|
@@ -33,14 +42,14 @@ The ten files under `public/assets/fallbacks/` are existing factory photographs 
 | Directory | Intended contents | Current state |
 |---|---|---|
 | `public/assets/references/` | Source identity/factory references and reusable upload mapping | Partial |
-| `public/assets/keyframes/concept-b/` | K00–K10 approved shared-boundary keyframes | Missing: generation blocked |
-| `public/assets/generated-clips/concept-b/` | Raw V01–V10 Seedance outputs | Missing: generation blocked |
-| `public/assets/optimized-clips/concept-b/` | Validated, optimized master clips | Missing: generation blocked |
-| `public/assets/sequence-desktop/` | Optimized numbered desktop frames | Missing: generation blocked |
-| `public/assets/sequence-mobile/` | Purposeful mobile crops/keyframes | Missing: generation blocked |
+| `public/assets/keyframes/concept-b/` | Optional future K00–K10 generated boundaries | Not used by current supplied-clip sequence |
+| `public/assets/generated-clips/concept-b/` | Optional generated source clips | Client masters remain at the supplied workspace paths to avoid shipping duplicate MP4s |
+| `public/assets/optimized-clips/concept-b/` | Optional optimized masters | Not required for canvas delivery |
+| `public/assets/sequence-desktop/` | Optimized numbered desktop frames | Complete: 189 frames |
+| `public/assets/sequence-mobile/` | Purposeful mobile crops/keyframes | Complete: 93 frames |
 | `public/assets/posters/` | Approved static posters | Current photos can serve temporarily |
 | `public/assets/generation-records/` | Job JSON, IDs, parameters, checks and rejected notes | Blocker record only |
 
 ## Replacement contract
 
-The canvas loader currently reads the ten fallback paths declared in `app/ConceptBClient.tsx`. Once final frames exist, replace that scene list with a generated frame manifest. The renderer already uses object-cover math, DPR capped at 2, current-progress restoration, readiness threshold, all-settled handling and a safety timeout.
+The canvas loader reads the desktop or mobile sequence according to the initial viewport. The renderer uses object-cover math, DPR capped at 2, current-progress restoration, a 60% readiness threshold, all-settled handling and a safety timeout. Static fallbacks remain available for reduced motion.
