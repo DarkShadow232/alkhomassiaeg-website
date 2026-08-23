@@ -21,8 +21,8 @@ const scenes = [
   { id: "ready", ar: "القماش الجاهز", en: "Finished fabric", lineAr: "جاهزون لتجهيز طلبكم القادم", lineEn: "Ready for your next production order", image: "/assets/fallbacks/10-exit.jpg", factAr: "استلام وتسليم 24/7", factEn: "24/7 receiving & delivery" },
 ] as const;
 
-const DESKTOP_FRAME_COUNT = 189;
-const MOBILE_FRAME_COUNT = 93;
+const DESKTOP_FRAME_COUNT = 225;
+const MOBILE_FRAME_COUNT = 113;
 
 const copy = {
   ar: {

@@ -1,6 +1,6 @@
 # Higgsfield Prompts — Concept B
 
-Status: retained as the future ten-scene expansion manifest. Claude/Higgsfield access is restored and the K04/K05 Scene 05 keyframe test was completed. The production site now uses the four client-supplied continuous MP4 masters, so no additional paid scene generation was submitted.
+Status: retained as the future ten-scene expansion manifest. Claude/Higgsfield access is restored and the K04/K05 Scene 05 keyframe test was completed. The production site now uses the client-supplied continuous 45-second MP4 master, so no additional paid scene generation was submitted.
 
 ## Locked global specification
 
@@ -163,4 +163,4 @@ After desktop keyframe approval, create purposeful 9:16 K00m–K10m boundaries r
 
 ## Approval record
 
-K04 and K05 were generated as a representative test and preserved outside production delivery. V05 and the remaining generated scenes were not submitted because the client supplied a complete four-clip cinematic route that is now used by the website.
+K04 and K05 were generated as a representative test and preserved outside production delivery. V05 and the remaining generated scenes were not submitted because the client supplied a complete continuous cinematic route that is now used by the website.

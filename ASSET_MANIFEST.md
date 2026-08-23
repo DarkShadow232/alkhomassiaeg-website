@@ -1,6 +1,6 @@
 # Concept B Asset Manifest
 
-Last reviewed: 2026-08-09
+Last reviewed: 2026-08-23
 
 ## Brand and source references
 
@@ -13,12 +13,12 @@ Last reviewed: 2026-08-09
 
 ## Current cinematic media
 
-The production canvas sequence is extracted from the four client-supplied masters at the workspace root: `1.mp4`, `2.mp4`, `3.mp4`, and `4.mp4`. All four are approximately 8.04 seconds at 24 fps. Their hashes, dimensions and boundary measurements are recorded in `public/assets/generation-records/supplied-clips-sequence.json`.
+The production canvas sequence is extracted from the client-supplied continuous master at `C:\Users\Omar Mohamed Paşa\Desktop\website\1.mp4`. It is 45.033 seconds at 30 fps and 1920×1080. Its hash, dimensions, counts and output verification are recorded in `public/assets/generation-records/supplied-master-sequence.json`.
 
-- Desktop: `public/assets/sequence-desktop/f000.jpg`–`f188.jpg` (189 frames, 1280×720).
-- Mobile: `public/assets/sequence-mobile/f000.jpg`–`f092.jpg` (93 purposeful 9:16 crops, 720×1280).
-- The first sampled frame of clips 2–4 is removed to avoid duplicated boundary frames.
-- All three clip handoffs passed the pixel-continuity check.
+- Desktop: `public/assets/sequence-desktop/f000.jpg`–`f224.jpg` (225 frames, 1280×720).
+- Mobile: `public/assets/sequence-mobile/f000.jpg`–`f112.jpg` (113 purposeful 9:16 crops, 720×1280).
+- Both sequences include the source opening and ending frames, preserving the intentional exterior loop.
+- All 338 generated frames exist and decode successfully.
 
 ## Reduced-motion fallbacks
 
@@ -45,10 +45,10 @@ The ten files under `public/assets/fallbacks/` remain as the static chapter expe
 | `public/assets/keyframes/concept-b/` | Optional future K00–K10 generated boundaries | Not used by current supplied-clip sequence |
 | `public/assets/generated-clips/concept-b/` | Optional generated source clips | Client masters remain at the supplied workspace paths to avoid shipping duplicate MP4s |
 | `public/assets/optimized-clips/concept-b/` | Optional optimized masters | Not required for canvas delivery |
-| `public/assets/sequence-desktop/` | Optimized numbered desktop frames | Complete: 189 frames |
-| `public/assets/sequence-mobile/` | Purposeful mobile crops/keyframes | Complete: 93 frames |
+| `public/assets/sequence-desktop/` | Optimized numbered desktop frames | Complete: 225 frames |
+| `public/assets/sequence-mobile/` | Purposeful mobile crops/keyframes | Complete: 113 frames |
 | `public/assets/posters/` | Approved static posters | Current photos can serve temporarily |
-| `public/assets/generation-records/` | Job JSON, IDs, parameters, checks and rejected notes | Blocker record only |
+| `public/assets/generation-records/` | Source records, parameters, checks and rejected notes | Production master record complete |
 
 ## Replacement contract
 
