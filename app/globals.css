@@ -82,7 +82,7 @@ img { display: block; max-width: 100%; }
 [dir="ltr"] .intro-strip h2, [dir="ltr"] .section h2, [dir="ltr"] .materials h2, [dir="ltr"] .contact h2 { font-family: "Montserrat", sans-serif; line-height: 1.05; }
 .intro-strip > p:last-child { margin: 0; color: var(--muted); line-height: 1.8; }
 
-.film { position: relative; height: 900svh; background: var(--black); }
+.film { position: relative; height: 1050svh; background: var(--black); }
 .film-stage { position: sticky; top: 0; width: 100%; height: 100svh; overflow: hidden; background: var(--black); color: #fff; }
 .film canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .film-shade { position: absolute; inset: 0; background: radial-gradient(circle at 60% 45%, transparent 25%, rgba(0,0,0,.32) 100%), linear-gradient(180deg, rgba(0,0,0,.18), transparent 30%, rgba(0,0,0,.7)); pointer-events: none; }
@@ -201,7 +201,7 @@ footer > div { grid-column: 1 / -1; display: flex; justify-content: space-betwee
   .hero-index { display: none; }
   .intro-strip { grid-template-columns: 1fr; }
   .intro-strip > p:last-child { grid-column: 1; }
-  .film { height: 700svh; }
+  .film { height: 820svh; }
   .preview-badge { top: 88px; }
   .scene-copy { inset-inline-start: 24px; bottom: 90px; width: calc(100vw - 76px); }
   .scene-copy h3 { font-size: clamp(2.1rem,10vw,3.7rem); }
