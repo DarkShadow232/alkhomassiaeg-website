@@ -47,6 +47,14 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
   assert.match(client, /window\.setTimeout\(\(\) => setFilmReady\(true\), 9000\)/);
   assert.match(client, /mailto:sales@alkhomassiaeg\.com/);
   assert.doesNotMatch(client, /video\.currentTime|<video/);
+  assert.match(client, /رحلة عبر الجودة/);
+  assert.match(client, /التجهيز الميكانيكي/);
+  assert.match(client, /معالجة ميكانيكية لكل أنواع الأقمشة/);
+  assert.match(client, /الفحص والجودة/);
+  assert.match(client, /أعلى معايير الجودة وأجود أنواع التغليف/);
+  assert.match(client, /المنتج النهائي/);
+  assert.match(client, /جاهزون لتجهيز طلبكم القادم/);
+  assert.doesNotMatch(client, /مستعدون|اللفة النهائية/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(css, /\.film-stage \{ position: sticky/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);

@@ -9,15 +9,15 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 type Locale = "ar" | "en";
 
 const scenes = [
-  { id: "exterior", ar: "الاقتراب الخارجي", en: "Exterior approach", lineAr: "من الخارج تبدأ الرؤية", lineEn: "The vision begins outside", image: "/assets/fallbacks/01-exterior.jpg" },
+  { id: "exterior", ar: "الاقتراب الخارجي", en: "Exterior approach", lineAr: "رحلة عبر الجودة", lineEn: "A journey through quality", image: "/assets/fallbacks/01-exterior.jpg" },
   { id: "entry", ar: "دخول المصنع", en: "Factory entry", lineAr: "خبرة تتحرك داخل كل مرحلة", lineEn: "Experience moves through every stage", image: "/assets/fallbacks/02-entry.jpg" },
   { id: "receiving", ar: "الاستلام والتحضير", en: "Receiving & preparation", lineAr: "استلام وتحضير وفق متطلبات كل تشغيلة", lineEn: "Prepared for every production run", image: "/assets/fallbacks/03-receiving.jpg" },
-  { id: "dyeing-entry", ar: "قاعة الصباغة", en: "Dyeing hall", lineAr: "بيئة تشغيل منظمة لنتائج أكثر اتساقاً", lineEn: "An organised production environment for consistent results", image: "/assets/fallbacks/04-lab.jpg" },
   { id: "dyeing", ar: "الصباغة", en: "Jet dyeing", lineAr: "صباغة متجانسة بحمولات مرنة", lineEn: "Consistent dyeing across flexible loads", image: "/assets/fallbacks/05-dyeing.jpg", factAr: "200–1200 كجم", factEn: "200–1,200 kg" },
-  { id: "control", ar: "التحكم في التشغيل", en: "Process control", lineAr: "كل مرحلة تتحرك تحت متابعة مستمرة", lineEn: "Every stage moves under continuous control", image: "/assets/fallbacks/06-stenter.jpg" },
+  { id: "dyeing-entry", ar: "قاعة الصباغة", en: "Dyeing hall", lineAr: "بيئة تشغيل منظمة لنتائج أكثر اتساقاً", lineEn: "An organised production environment for consistent results", image: "/assets/fallbacks/04-lab.jpg" },
   { id: "stenter", ar: "التجفيف والتثبيت", en: "Drying & heat-setting", lineAr: "تجفيف وتثبيت حراري لثبات الأبعاد", lineEn: "Drying and heat-setting for dimensional stability", image: "/assets/fallbacks/07-finishing.jpg" },
-  { id: "finishing", ar: "التجهيز", en: "Finishing", lineAr: "تجهيز يمنح القماش خواصه النهائية", lineEn: "Finishing gives fabric its final properties", image: "/assets/fallbacks/08-quality.jpg" },
-  { id: "rolling", ar: "تدفق القماش", en: "Fabric flow", lineAr: "حركة منتظمة من خط الإنتاج إلى اللفة النهائية", lineEn: "Controlled movement from production line to final roll", image: "/assets/fallbacks/09-warehouse.jpg", factAr: "+600 طن شهرياً", factEn: "600+ tons monthly" },
+  { id: "mechanical-finishing", ar: "التجهيز الميكانيكي", en: "Mechanical finishing", lineAr: "معالجة ميكانيكية لكل أنواع الأقمشة", lineEn: "Mechanical treatment for every fabric type", image: "/assets/fallbacks/06-stenter.jpg" },
+  { id: "inspection", ar: "الفحص والجودة", en: "Inspection & quality", lineAr: "أعلى معايير الجودة وأجود أنواع التغليف", lineEn: "The highest quality standards and finest packaging", image: "/assets/fallbacks/08-quality.jpg" },
+  { id: "rolling", ar: "تدفق القماش", en: "Fabric flow", lineAr: "حركة منتظمة من خط الإنتاج إلى المنتج النهائي", lineEn: "Controlled movement from production line to the finished product", image: "/assets/fallbacks/09-warehouse.jpg", factAr: "+600 طن شهرياً", factEn: "600+ tons monthly" },
   { id: "ready", ar: "القماش الجاهز", en: "Finished fabric", lineAr: "جاهزون لتجهيز طلبكم القادم", lineEn: "Ready for your next production order", image: "/assets/fallbacks/10-exit.jpg", factAr: "استلام وتسليم 24/7", factEn: "24/7 receiving & delivery" },
 ] as const;
 
@@ -97,6 +97,8 @@ export default function ConceptBClient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const filmRef = useRef<HTMLElement>(null);
   const progressRef = useRef(0);
+  const targetProgressRef = useRef(0);
+  const activeSceneRef = useRef(0);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrame = useRef(-1);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -200,23 +202,52 @@ export default function ConceptBClient() {
   useEffect(() => {
     if (!filmReady || reducedMotion || !filmRef.current) return;
     gsap.registerPlugin(ScrollTrigger);
+    let animationFrame = 0;
+
+    const renderProgress = () => {
+      animationFrame = 0;
+      const current = progressRef.current;
+      const target = targetProgressRef.current;
+      const delta = target - current;
+      const next = Math.abs(delta) < 0.00015 ? target : current + delta * 0.14;
+      progressRef.current = next;
+
+      const frameIndex = Math.min(imagesRef.current.length - 1, Math.round(next * (imagesRef.current.length - 1)));
+      const sceneIndex = Math.min(scenes.length - 1, Math.floor(next * scenes.length));
+      if (sceneIndex !== activeSceneRef.current) {
+        activeSceneRef.current = sceneIndex;
+        setActiveScene(sceneIndex);
+      }
+      drawFrame(frameIndex);
+
+      if (next !== target) animationFrame = window.requestAnimationFrame(renderProgress);
+    };
+
+    const queueRender = () => {
+      if (!animationFrame) animationFrame = window.requestAnimationFrame(renderProgress);
+    };
+
     const trigger = ScrollTrigger.create({
       trigger: filmRef.current,
       start: "top top",
       end: "bottom bottom",
-      scrub: 0.45,
       onUpdate: (self) => {
-        progressRef.current = self.progress;
-        const frameIndex = Math.min(imagesRef.current.length - 1, Math.round(self.progress * (imagesRef.current.length - 1)));
-        const sceneIndex = Math.min(scenes.length - 1, Math.floor(self.progress * scenes.length));
-        setActiveScene(sceneIndex);
-        drawFrame(frameIndex);
+        targetProgressRef.current = self.progress;
+        queueRender();
       },
     });
+    progressRef.current = trigger.progress;
+    targetProgressRef.current = trigger.progress;
+    activeSceneRef.current = Math.min(scenes.length - 1, Math.floor(trigger.progress * scenes.length));
+    setActiveScene(activeSceneRef.current);
     drawFrame(Math.round(trigger.progress * (imagesRef.current.length - 1)));
     const onResize = () => { currentFrame.current = -1; drawFrame(Math.round(progressRef.current * (imagesRef.current.length - 1))); };
     window.addEventListener("resize", onResize);
-    return () => { window.removeEventListener("resize", onResize); trigger.kill(); };
+    return () => {
+      window.removeEventListener("resize", onResize);
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      trigger.kill();
+    };
   }, [filmReady, reducedMotion]);
 
   const jumpToScene = (index: number) => {
@@ -263,14 +294,11 @@ export default function ConceptBClient() {
         <section className="hero" id="home" aria-labelledby="hero-title">
           <div className="hero-bg" aria-hidden="true" />
           <div className="hero-grain" aria-hidden="true" />
-          <div className="hero-content">
-            <p className="eyebrow">{t.heroEyebrow}</p>
-            <h1 id="hero-title">{t.hero}</h1>
-            <p className="hero-sub">{t.heroSub}</p>
-            <div className="hero-actions"><a className="button" href="#film">{t.explore}</a><a className="text-link" href="#contact">{t.quote}<span aria-hidden="true">←</span></a></div>
+          <h1 className="sr-only" id="hero-title">{t.hero}</h1>
+          <div className="hero-emblem" aria-hidden="true">
+            <span><img src="/assets/brand/logo.png" alt="" /></span>
           </div>
-          <div className="hero-index" aria-hidden="true"><span>CONCEPT B</span><b>01</b></div>
-          <a href="#film" className="scroll-cue"><span>{t.scroll}</span><i /></a>
+          <a href="#film" className="scroll-cue" aria-label={t.scroll}><i /></a>
         </section>
 
         <section className="intro-strip" aria-label={isAr ? "ملخص الجولة" : "Tour introduction"}>
