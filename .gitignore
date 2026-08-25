@@ -43,3 +43,6 @@ dev.stderr.log
 /outputs/
 /work/
 /.tools/
+
+# tooling scratch
+scripts/__pycache__/

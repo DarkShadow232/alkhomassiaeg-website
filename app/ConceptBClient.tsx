@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -41,6 +41,7 @@ const copy = {
     mailNote: "بعد الإرسال سيفتح برنامج البريد برسالة جاهزة. لا يتم تخزين بياناتك على الموقع.",
     submit: "جهّز رسالة طلب السعر", consent: "أوافق على استخدام بياناتي للرد على هذا الاستفسار فقط.",
     footerLine: "خبرة مصرية في صباغة وتجهيز الأقمشة.", menu: "فتح القائمة", close: "إغلاق القائمة",
+    language: "اللغة", progress: "تقدم القراءة",
   },
   en: {
     nav: ["Home", "The tour", "Capabilities", "Services", "Quality", "Contact"],
@@ -58,6 +59,7 @@ const copy = {
     mailNote: "Submitting opens your email app with a prepared message. This website does not store your data.",
     submit: "Prepare quote email", consent: "I consent to my details being used only to answer this inquiry.",
     footerLine: "Egyptian expertise in fabric dyeing and finishing.", menu: "Open menu", close: "Close menu",
+    language: "Language", progress: "Reading progress",
   },
 } as const;
 
@@ -77,10 +79,14 @@ const serviceItems = [
   ["06", "الفحص والتسليم", "Inspection & dispatch", "فحص وقياس وتغليف قبل انتقال اللفة إلى الجاهز.", "Inspection, measurement and packing before dispatch."],
 ] as const;
 
+const navTargets = ["home", "film", "capabilities", "services", "quality", "contact"] as const;
+
+/* The transparent derivative of the authoritative emblem. It is placed with no
+   plate, box, border or background of any kind — see .brand-mark in globals.css. */
 function LogoLockup({ compact = false }: { compact?: boolean }) {
   return (
     <a className={`logo-lockup${compact ? " compact" : ""}`} href="#home" aria-label="الخماسية — الرئيسية">
-      <img src="/assets/brand/logo.png" alt="شعار الخماسية" />
+      <span className="brand-mark"><img src="/assets/brand/logo-transparent.png" alt="" width={2000} height={1600} /></span>
       <span><b>الخماسية</b><small>AL KHOMASSIA FOR TEXTILE INDUSTRIES</small></span>
     </a>
   );
@@ -90,12 +96,16 @@ export default function ConceptBClient() {
   const [locale, setLocale] = useState<Locale>("ar");
   const [menuOpen, setMenuOpen] = useState(false);
   const [headerHidden, setHeaderHidden] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeNav, setActiveNav] = useState(0);
   const [activeScene, setActiveScene] = useState(0);
   const [loadProgress, setLoadProgress] = useState(0);
   const [filmReady, setFilmReady] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const filmRef = useRef<HTMLElement>(null);
+  const filmBarRef = useRef<HTMLSpanElement>(null);
+  const pageBarRef = useRef<HTMLSpanElement>(null);
   const progressRef = useRef(0);
   const targetProgressRef = useRef(0);
   const activeSceneRef = useRef(0);
@@ -119,19 +129,63 @@ export default function ConceptBClient() {
     return () => mq.removeEventListener("change", update);
   }, []);
 
+  /* One rAF-throttled scroll pass drives the header state, the page progress
+     bar and the section scrollspy, so navigation always reflects the viewport. */
   useEffect(() => {
     let last = window.scrollY;
-    const onScroll = () => {
-      const next = window.scrollY;
-      setHeaderHidden(next > last && next > 160 && !menuOpen);
-      last = next;
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const y = window.scrollY;
+      const limit = document.documentElement.scrollHeight - window.innerHeight;
+      const ratio = limit > 0 ? Math.min(1, Math.max(0, y / limit)) : 0;
+      if (pageBarRef.current) pageBarRef.current.style.transform = `scaleX(${ratio})`;
+      setScrolled(y > 12);
+      setHeaderHidden(y > last && y > 240 && !menuOpen);
+      last = y;
+
+      const line = y + parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-h") || "78") + 12;
+      let current = 0;
+      navTargets.forEach((id, index) => {
+        const node = document.getElementById(id);
+        if (node && node.offsetTop <= line) current = index;
+      });
+      setActiveNav(current);
     };
+    const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(measure); };
+    measure();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, [menuOpen]);
 
+  /* Progressive reveal for section content — inert when reduced motion is on. */
+  useEffect(() => {
+    const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
+    if (reducedMotion) {
+      nodes.forEach((node) => node.classList.add("is-visible"));
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: "0px 0px -12% 0px", threshold: 0.08 });
+    nodes.forEach((node) => observer.observe(node));
+    return () => observer.disconnect();
+  }, [reducedMotion, locale]);
+
+  /* Mobile menu: focus trap, Escape to close and a background scroll lock. */
   useEffect(() => {
     if (!menuOpen) return;
+    document.body.classList.add("menu-open");
     const root = menuRef.current;
     const focusable = root?.querySelectorAll<HTMLElement>("a,button");
     focusable?.[0]?.focus();
@@ -148,7 +202,10 @@ export default function ConceptBClient() {
       }
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      document.body.classList.remove("menu-open");
+      document.removeEventListener("keydown", onKey);
+    };
   }, [menuOpen]);
 
   useEffect(() => {
@@ -218,6 +275,7 @@ export default function ConceptBClient() {
         activeSceneRef.current = sceneIndex;
         setActiveScene(sceneIndex);
       }
+      if (filmBarRef.current) filmBarRef.current.style.transform = `scaleX(${next})`;
       drawFrame(frameIndex);
 
       if (next !== target) animationFrame = window.requestAnimationFrame(renderProgress);
@@ -240,6 +298,7 @@ export default function ConceptBClient() {
     targetProgressRef.current = trigger.progress;
     activeSceneRef.current = Math.min(scenes.length - 1, Math.floor(trigger.progress * scenes.length));
     setActiveScene(activeSceneRef.current);
+    if (filmBarRef.current) filmBarRef.current.style.transform = `scaleX(${trigger.progress})`;
     drawFrame(Math.round(trigger.progress * (imagesRef.current.length - 1)));
     const onResize = () => { currentFrame.current = -1; drawFrame(Math.round(progressRef.current * (imagesRef.current.length - 1))); };
     window.addEventListener("resize", onResize);
@@ -250,13 +309,13 @@ export default function ConceptBClient() {
     };
   }, [filmReady, reducedMotion]);
 
-  const jumpToScene = (index: number) => {
+  const jumpToScene = useCallback((index: number) => {
     const film = filmRef.current;
     if (!film) return;
     const start = film.offsetTop;
     const distance = film.offsetHeight - window.innerHeight;
     window.scrollTo({ top: start + distance * (index / (scenes.length - 1)), behavior: reducedMotion ? "auto" : "smooth" });
-  };
+  }, [reducedMotion]);
 
   const submitInquiry = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -266,28 +325,45 @@ export default function ConceptBClient() {
     window.location.href = `mailto:sales@alkhomassiaeg.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   };
 
-  const navTargets = ["home", "film", "capabilities", "services", "quality", "contact"];
-  const handleMenuKey = (event: KeyboardEvent<HTMLButtonElement>) => { if (event.key === "ArrowDown") setMenuOpen(true); };
+  const closeMenu = () => { setMenuOpen(false); menuButtonRef.current?.focus(); };
 
   return (
     <>
       <a className="skip-link" href="#main">{isAr ? "انتقل إلى المحتوى" : "Skip to content"}</a>
-      <header className={`site-header${headerHidden ? " is-hidden" : ""}${menuOpen ? " menu-active" : ""}`}>
+      <header className={`site-header${headerHidden ? " is-hidden" : ""}${scrolled ? " is-scrolled" : ""}${menuOpen ? " menu-active" : ""}`}>
         <LogoLockup compact />
         <nav className="desktop-nav" aria-label={isAr ? "التنقل الرئيسي" : "Primary navigation"}>
-          {t.nav.map((item, index) => <a key={item} href={`#${navTargets[index]}`}>{item}</a>)}
+          {t.nav.map((item, index) => (
+            <a key={item} href={`#${navTargets[index]}`} aria-current={activeNav === index ? "true" : undefined}>{item}</a>
+          ))}
         </nav>
         <div className="header-actions">
-          <button className="language" onClick={() => setLocale(isAr ? "en" : "ar")} aria-label={isAr ? "Switch to English" : "التبديل إلى العربية"}>{isAr ? "EN" : "ع"}</button>
+          <div className="lang-switch" role="group" aria-label={t.language}>
+            <button type="button" lang="ar" aria-pressed={isAr} onClick={() => setLocale("ar")} title="العربية">ع</button>
+            <button type="button" lang="en" aria-pressed={!isAr} onClick={() => setLocale("en")} title="English">EN</button>
+          </div>
           <a className="button button-small" href="#contact">{t.quote}</a>
-          <button ref={menuButtonRef} className="menu-button" aria-expanded={menuOpen} aria-controls="mobile-menu" aria-label={menuOpen ? t.close : t.menu} onClick={() => setMenuOpen(!menuOpen)} onKeyDown={handleMenuKey}><span /><span /></button>
+          <button ref={menuButtonRef} type="button" className="menu-button" aria-expanded={menuOpen} aria-controls="mobile-menu" aria-label={menuOpen ? t.close : t.menu} onClick={() => setMenuOpen(!menuOpen)}><i aria-hidden="true" /></button>
         </div>
+        <div className="header-progress" aria-hidden="true"><span ref={pageBarRef} /></div>
       </header>
 
       {menuOpen && <div className="mobile-menu" id="mobile-menu" ref={menuRef} role="dialog" aria-modal="true" aria-label={t.menu}>
-        <button className="mobile-close" onClick={() => { setMenuOpen(false); menuButtonRef.current?.focus(); }}>{t.close}</button>
-        <nav>{t.nav.map((item, index) => <a key={item} href={`#${navTargets[index]}`} onClick={() => setMenuOpen(false)}><span>0{index + 1}</span>{item}</a>)}</nav>
-        <a className="button" href="#contact" onClick={() => setMenuOpen(false)}>{t.quote}</a>
+        <nav aria-label={isAr ? "التنقل الرئيسي" : "Primary navigation"}>
+          {t.nav.map((item, index) => (
+            <a key={item} href={`#${navTargets[index]}`} aria-current={activeNav === index ? "true" : undefined} onClick={() => setMenuOpen(false)}>
+              <span>{String(index + 1).padStart(2, "0")}</span>{item}
+            </a>
+          ))}
+        </nav>
+        <div className="menu-foot">
+          <a className="button" href="#contact" onClick={() => setMenuOpen(false)}>{t.quote}</a>
+          <div className="menu-contact">
+            <a href="tel:+201273933043" dir="ltr">+20 127 393 3043</a>
+            <a href="mailto:sales@alkhomassiaeg.com">sales@alkhomassiaeg.com</a>
+          </div>
+          <button type="button" className="mobile-close" onClick={closeMenu}>{t.close}</button>
+        </div>
       </div>}
 
       <main id="main">
@@ -296,14 +372,21 @@ export default function ConceptBClient() {
           <div className="hero-grain" aria-hidden="true" />
           <h1 className="sr-only" id="hero-title">{t.hero}</h1>
           <div className="hero-emblem" aria-hidden="true">
-            <span><img src="/assets/brand/logo.png" alt="" /></span>
+            <img
+              src="/assets/brand/logo-arabic-lockup.png"
+              alt=""
+              width={592}
+              height={395}
+              fetchPriority="high"
+            />
           </div>
-          <a href="#film" className="scroll-cue" aria-label={t.scroll}><i /></a>
+          <a href="#film" className="scroll-cue" aria-label={t.scroll}><i aria-hidden="true" /></a>
         </section>
 
         <section className="intro-strip" aria-label={isAr ? "ملخص الجولة" : "Tour introduction"}>
-          <p className="eyebrow">{t.filmKicker}</p><h2>{t.filmTitle}</h2>
-          <p>{isAr ? "الكاميرا تتبع مسار التشغيل الحقيقي عبر عشر محطات مترابطة." : "The camera follows the real production route across ten connected stages."}</p>
+          <p className="eyebrow" data-reveal>{t.filmKicker}</p>
+          <h2 data-reveal>{t.filmTitle}</h2>
+          <p data-reveal>{isAr ? "الكاميرا تتبع مسار التشغيل الحقيقي عبر عشر محطات مترابطة." : "The camera follows the real production route across ten connected stages."}</p>
         </section>
 
         <section ref={filmRef} className={`film${reducedMotion ? " reduced" : ""}`} id="film" aria-label={isAr ? "جولة المصنع" : "Factory tour"}>
@@ -311,41 +394,42 @@ export default function ConceptBClient() {
           <div className="film-stage">
             <canvas ref={canvasRef} aria-hidden="true" />
             <div className="film-shade" aria-hidden="true" />
+            <div className="film-progress" aria-hidden="true"><span ref={filmBarRef} /></div>
             {!filmReady && <div className="film-loader" role="status"><div><span style={{ width: `${loadProgress}%` }} /></div><p>{isAr ? `تهيئة الجولة ${loadProgress}%` : `Preparing the tour ${loadProgress}%`}</p></div>}
-            <div className="preview-badge">{t.preview}</div>
+            <p className="preview-badge">{t.preview}</p>
             <div className="scene-copy" key={`${locale}-${activeScene}`}>
               <span>{String(activeScene + 1).padStart(2, "0")} / {String(scenes.length).padStart(2, "0")}</span>
               <p>{isAr ? scenes[activeScene].ar : scenes[activeScene].en}</p>
               <h3>{isAr ? scenes[activeScene].lineAr : scenes[activeScene].lineEn}</h3>
               {scenes[activeScene].factAr && <b>{isAr ? scenes[activeScene].factAr : scenes[activeScene].factEn}</b>}
             </div>
-            <nav className="route" aria-label={isAr ? "مراحل الجولة" : "Tour stages"}>{scenes.map((scene, index) => <button key={scene.id} className={index === activeScene ? "active" : ""} onClick={() => jumpToScene(index)} aria-label={isAr ? scene.ar : scene.en}><span>{String(index + 1).padStart(2, "0")}</span><i /></button>)}</nav>
+            <nav className="route" aria-label={isAr ? "مراحل الجولة" : "Tour stages"}>{scenes.map((scene, index) => <button key={scene.id} type="button" className={index === activeScene ? "active" : ""} onClick={() => jumpToScene(index)} aria-label={isAr ? scene.ar : scene.en} aria-current={index === activeScene ? "true" : undefined}><span>{String(index + 1).padStart(2, "0")}</span><i aria-hidden="true" /></button>)}</nav>
           </div>}
         </section>
 
         <section className="section capabilities" id="capabilities">
-          <div className="section-head"><p className="eyebrow">{t.capabilitiesKicker}</p><h2>{t.capabilitiesTitle}</h2></div>
-          <div className="stats-grid">{stats.map(([value, ar, en]) => <article key={value}><strong>{value}</strong><span>{isAr ? ar : en}</span></article>)}</div>
+          <div className="section-head"><p className="eyebrow" data-reveal>{t.capabilitiesKicker}</p><h2 data-reveal>{t.capabilitiesTitle}</h2></div>
+          <div className="stats-grid" data-reveal>{stats.map(([value, ar, en]) => <article key={value}><strong>{value}</strong><span>{isAr ? ar : en}</span></article>)}</div>
           <p className="source-note">{isAr ? "الأرقام وفق مواد الشركة المعتمدة، أغسطس 2026." : "Figures follow the approved company materials, August 2026."}</p>
         </section>
 
         <section className="section services" id="services">
-          <div className="section-head split"><div><p className="eyebrow">{t.servicesKicker}</p><h2>{t.servicesTitle}</h2></div><p>{isAr ? "من استلام القماش الخام إلى تسليم اللفات الجاهزة، تمر كل تشغيلة في مسار واضح قابل للمتابعة." : "From receiving raw fabric to dispatching finished rolls, each run follows a clear controlled route."}</p></div>
-          <div className="services-list">{serviceItems.map(([number, ar, en, bodyAr, bodyEn]) => <article key={number}><span>{number}</span><h3>{isAr ? ar : en}</h3><p>{isAr ? bodyAr : bodyEn}</p></article>)}</div>
+          <div className="section-head split"><div><p className="eyebrow" data-reveal>{t.servicesKicker}</p><h2 data-reveal>{t.servicesTitle}</h2></div><p data-reveal>{isAr ? "من استلام القماش الخام إلى تسليم اللفات الجاهزة، تمر كل تشغيلة في مسار واضح قابل للمتابعة." : "From receiving raw fabric to dispatching finished rolls, each run follows a clear controlled route."}</p></div>
+          <div className="services-list">{serviceItems.map(([number, ar, en, bodyAr, bodyEn]) => <article key={number} data-reveal><span>{number}</span><h3>{isAr ? ar : en}</h3><p>{isAr ? bodyAr : bodyEn}</p></article>)}</div>
         </section>
 
         <section className="materials" id="materials">
           <div className="materials-image"><img src="/assets/fallbacks/03-receiving.jpg" alt={isAr ? "لفات قماش داخل المصنع" : "Fabric rolls inside the factory"} loading="lazy" /></div>
-          <div className="materials-copy"><p className="eyebrow">{t.materialsKicker}</p><h2>{t.materialsTitle}</h2><div className="material-row"><span>01</span><h3>{isAr ? "القطن" : "Cotton"}</h3></div><div className="material-row"><span>02</span><h3>{isAr ? "البوليستر" : "Polyester"}</h3></div><div className="material-row"><span>03</span><h3>{isAr ? "الأقمشة الممزوجة" : "Blended fabrics"}</h3></div><p>{isAr ? "تُضبط مراحل الصباغة والتجهيز وفق نوع الخامة ومتطلبات التشغيلة." : "Dyeing and finishing stages are set around material type and production requirements."}</p></div>
+          <div className="materials-copy"><p className="eyebrow" data-reveal>{t.materialsKicker}</p><h2 data-reveal>{t.materialsTitle}</h2><div className="material-row" data-reveal><span>01</span><h3>{isAr ? "القطن" : "Cotton"}</h3></div><div className="material-row" data-reveal><span>02</span><h3>{isAr ? "البوليستر" : "Polyester"}</h3></div><div className="material-row" data-reveal><span>03</span><h3>{isAr ? "الأقمشة الممزوجة" : "Blended fabrics"}</h3></div><p>{isAr ? "تُضبط مراحل الصباغة والتجهيز وفق نوع الخامة ومتطلبات التشغيلة." : "Dyeing and finishing stages are set around material type and production requirements."}</p></div>
         </section>
 
         <section className="section quality" id="quality">
-          <div className="section-head"><p className="eyebrow">{t.qualityKicker}</p><h2>{t.qualityTitle}</h2></div>
-          <div className="quality-grid"><article><span>01</span><h3>{isAr ? "ثبات النتائج" : "Consistency"}</h3><p>{isAr ? "متابعة التشغيلة عبر مراحل الإنتاج للحفاظ على النتيجة المطلوبة." : "Monitoring through production to maintain the specified outcome."}</p></article><article><span>02</span><h3>{isAr ? "مطابقة اللون" : "Colour matching"}</h3><p>{isAr ? "اختبارات معملية قبل اعتماد التشغيل ومتابعة أثناء التنفيذ." : "Laboratory testing before production and monitoring during processing."}</p></article><article><span>03</span><h3>{isAr ? "الالتزام" : "On-time delivery"}</h3><p>{isAr ? "تنظيم التشغيل والتسليم ضمن المواعيد المتفق عليها." : "Production and dispatch organised around agreed timelines."}</p></article></div>
+          <div className="section-head"><p className="eyebrow" data-reveal>{t.qualityKicker}</p><h2 data-reveal>{t.qualityTitle}</h2></div>
+          <div className="quality-grid" data-reveal><article><span>01</span><h3>{isAr ? "ثبات النتائج" : "Consistency"}</h3><p>{isAr ? "متابعة التشغيلة عبر مراحل الإنتاج للحفاظ على النتيجة المطلوبة." : "Monitoring through production to maintain the specified outcome."}</p></article><article><span>02</span><h3>{isAr ? "مطابقة اللون" : "Colour matching"}</h3><p>{isAr ? "اختبارات معملية قبل اعتماد التشغيل ومتابعة أثناء التنفيذ." : "Laboratory testing before production and monitoring during processing."}</p></article><article><span>03</span><h3>{isAr ? "الالتزام" : "On-time delivery"}</h3><p>{isAr ? "تنظيم التشغيل والتسليم ضمن المواعيد المتفق عليها." : "Production and dispatch organised around agreed timelines."}</p></article></div>
         </section>
 
         <section className="contact" id="contact">
-          <div className="contact-intro"><p className="eyebrow">{t.formKicker}</p><h2>{t.formTitle}</h2><div className="contact-lines"><a href="tel:+201273933043" dir="ltr">+20 127 393 3043</a><a href="mailto:sales@alkhomassiaeg.com">sales@alkhomassiaeg.com</a><p>{isAr ? "العاشر من رمضان · المنطقة الصناعية A4 · مصر" : "10th of Ramadan City · Industrial Zone A4 · Egypt"}</p></div></div>
+          <div className="contact-intro"><p className="eyebrow" data-reveal>{t.formKicker}</p><h2 data-reveal>{t.formTitle}</h2><div className="contact-lines"><a href="tel:+201273933043" dir="ltr">+20 127 393 3043</a><a href="mailto:sales@alkhomassiaeg.com">sales@alkhomassiaeg.com</a><p>{isAr ? "العاشر من رمضان · المنطقة الصناعية A4 · مصر" : "10th of Ramadan City · Industrial Zone A4 · Egypt"}</p></div></div>
           <form onSubmit={submitInquiry} className="inquiry-form">
             <label><span>{isAr ? "الاسم" : "Name"}</span><input name="name" required autoComplete="name" /></label>
             <label><span>{isAr ? "الشركة" : "Company"}</span><input name="company" required autoComplete="organization" /></label>
