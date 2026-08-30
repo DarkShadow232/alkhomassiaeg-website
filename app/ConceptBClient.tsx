@@ -368,15 +368,23 @@ export default function ConceptBClient() {
 
       <main id="main">
         <section className="hero" id="home" aria-labelledby="hero-title">
-          <div className="hero-bg" aria-hidden="true" />
+          <div className="hero-bg" aria-hidden="true">
+            <img
+              src="/assets/hero/hero-factory-blur.png"
+              alt=""
+              width={1672}
+              height={941}
+              fetchPriority="high"
+            />
+          </div>
           <div className="hero-grain" aria-hidden="true" />
           <h1 className="sr-only" id="hero-title">{t.hero}</h1>
           <div className="hero-emblem" aria-hidden="true">
             <img
-              src="/assets/brand/logo-arabic-lockup.png"
+              src="/assets/brand/logo-arabic-lockup-transparent.png"
               alt=""
-              width={592}
-              height={395}
+              width={769}
+              height={621}
               fetchPriority="high"
             />
           </div>
