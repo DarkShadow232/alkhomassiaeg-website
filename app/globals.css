@@ -452,34 +452,20 @@ footer :focus-visible,
 .contact-lines a::before { content: ""; flex: none; width: 16px; height: 1px; background: var(--gold-light); }
 .contact-lines p { max-width: 34ch; margin: 12px 0 0; color: rgba(255, 255, 255, .6); font-size: .92rem; }
 
-.inquiry-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(16px, 1.8vw, 22px); padding: clamp(24px, 3vw, 44px); border: 1px solid var(--line-dark); border-radius: var(--r-lg); background: rgba(255, 255, 255, .04); box-shadow: var(--shadow-lg); }
-.inquiry-form label { display: grid; gap: 8px; min-width: 0; }
-.inquiry-form label > span { color: rgba(255, 255, 255, .72); font-size: .8rem; font-weight: 500; }
-.inquiry-form input, .inquiry-form select, .inquiry-form textarea {
-  width: 100%; min-height: 48px; padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, .16); border-radius: var(--r-sm);
-  background: rgba(255, 255, 255, .05); color: #fff; outline: none;
-  transition: border-color .25s var(--ease), background .25s var(--ease), box-shadow .25s var(--ease);
+.whatsapp-card {
+  min-height: 320px; padding: clamp(28px, 4vw, 56px);
+  display: grid; align-content: center; justify-items: start; gap: 22px;
+  border: 1px solid color-mix(in srgb, #25d366 30%, var(--line-dark));
+  border-radius: var(--r-lg);
+  background: linear-gradient(135deg, rgba(37, 211, 102, .09), rgba(255, 255, 255, .025));
+  box-shadow: var(--shadow-lg);
 }
-.inquiry-form textarea { min-height: 112px; resize: vertical; line-height: 1.7; }
-.inquiry-form select {
-  color-scheme: dark; appearance: none; padding-inline-end: 38px;
-  background-image: linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, .55) 50%), linear-gradient(135deg, rgba(255, 255, 255, .55) 50%, transparent 50%);
-  background-size: 6px 6px, 6px 6px; background-repeat: no-repeat;
-  background-position: right 20px center, right 14px center;
-}
-[dir="rtl"] .inquiry-form select { background-position: left 14px center, left 20px center; }
-.inquiry-form input:hover, .inquiry-form select:hover, .inquiry-form textarea:hover { border-color: rgba(255, 255, 255, .28); }
-/* Fields replace the generic outline with a gold border + halo, so the halo has
-   to carry the indicator on its own — keep it strong enough to read at a glance. */
-.inquiry-form input:focus, .inquiry-form select:focus, .inquiry-form textarea:focus { border-color: var(--gold-light); background: rgba(255, 255, 255, .09); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold-light) 48%, transparent); }
-.inquiry-form input:focus-visible, .inquiry-form select:focus-visible, .inquiry-form textarea:focus-visible { outline: none; }
-.inquiry-form .wide { grid-column: 1 / -1; }
-.consent { display: flex !important; align-items: flex-start; gap: 12px !important; padding: 14px 16px; border: 1px solid var(--line-dark-soft); border-radius: var(--r-sm); background: rgba(255, 255, 255, .03); cursor: pointer; }
-.consent input { flex: none; width: 20px; height: 20px; min-height: 0; margin-top: 3px; padding: 0; border-radius: 5px; accent-color: var(--gold); cursor: pointer; }
-.consent > span { color: rgba(255, 255, 255, .76); font-size: .86rem; line-height: 1.6; }
-.form-note { margin: 0; color: rgba(255, 255, 255, .5); font-size: .78rem; line-height: 1.65; }
-.inquiry-form button { width: 100%; }
+.whatsapp-label { color: #73e99d; font: 700 .74rem/1 var(--font-latin); letter-spacing: .15em; text-transform: uppercase; }
+.whatsapp-card > p { max-width: 48ch; margin: 0; color: rgba(255, 255, 255, .78); font-size: clamp(1rem, 1.4vw, 1.15rem); line-height: 1.9; }
+.whatsapp-card > small { color: rgba(255, 255, 255, .52); font-size: .78rem; line-height: 1.7; }
+.whatsapp-button { min-width: min(100%, 280px); background: #25d366; border-color: #25d366; color: #07130b; box-shadow: 0 14px 34px -14px rgba(37, 211, 102, .72); }
+.whatsapp-button:hover { background: #4ade80; border-color: #4ade80; box-shadow: 0 18px 40px -14px rgba(37, 211, 102, .85); }
+.whatsapp-button b { font: 700 1.1rem/1 var(--font-latin); }
 
 /* ============================================================
    Footer
@@ -522,8 +508,7 @@ footer > div a:hover { color: var(--gold-light); }
   .section-head.split { grid-template-columns: 1fr; }
   .services-list article { grid-template-columns: 44px minmax(0, 1fr); align-items: start; gap: 8px 14px; min-height: 0; }
   .services-list p { grid-column: 2; }
-  .inquiry-form { grid-template-columns: 1fr; }
-  .inquiry-form .wide { grid-column: auto; }
+  .whatsapp-card { min-height: 280px; }
   footer { grid-template-columns: 1fr; }
   footer > p { text-align: start; justify-self: start; }
 }

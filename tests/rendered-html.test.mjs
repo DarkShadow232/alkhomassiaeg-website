@@ -25,7 +25,9 @@ test("server-renders the Arabic-first Concept B site", async () => {
   assert.match(html, /\+600/);
   assert.match(html, /200–1200/);
   assert.match(html, /sales@alkhomassiaeg\.com/);
-  assert.match(html, /<form class="inquiry-form">/);
+  assert.match(html, /https:\/\/wa\.me\/201273933043/);
+  assert.match(html, /class="whatsapp-card"/);
+  assert.doesNotMatch(html, /<form class="inquiry-form">/);
   assert.match(html, /role="status"/);
   assert.doesNotMatch(html, /\bKor\b|\+966|info@alkhomassia\.com/i);
   assert.doesNotMatch(html, /<video\b/i);
@@ -48,6 +50,8 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
   assert.match(client, /hero-lockup-gold-3d-transparent\.png/);
   assert.match(client, /window\.setTimeout\(\(\) => setFilmReady\(true\), 9000\)/);
   assert.match(client, /mailto:sales@alkhomassiaeg\.com/);
+  assert.match(client, /wa\.me\/201273933043/);
+  assert.match(client, /ابدأ طلبك عبر واتساب/);
   assert.doesNotMatch(client, /video\.currentTime|<video/);
   assert.match(client, /رحلة عبر الجودة/);
   assert.match(client, /التجهيز الميكانيكي/);

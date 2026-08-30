@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -37,9 +37,9 @@ const copy = {
     servicesKicker: "منظومة متكاملة", servicesTitle: "كل مرحلة تحت رقابة واحدة.",
     materialsKicker: "الخامات", materialsTitle: "مرونة تناسب احتياجات التشغيل.",
     qualityKicker: "منهج العمل", qualityTitle: "الدقة جزء من العملية، وليست خطوة أخيرة.",
-    formKicker: "ابدأ طلبك", formTitle: "أخبرنا عن التشغيلة القادمة.",
-    mailNote: "بعد الإرسال سيفتح برنامج البريد برسالة جاهزة. لا يتم تخزين بياناتك على الموقع.",
-    submit: "جهّز رسالة طلب السعر", consent: "أوافق على استخدام بياناتي للرد على هذا الاستفسار فقط.",
+    formKicker: "تواصل مباشر", formTitle: "ابدأ طلبك عبر واتساب.",
+    whatsappLead: "تواصل مباشرة مع فريق المبيعات، وأرسل تفاصيل القماش والكمية والخدمة المطلوبة داخل المحادثة.",
+    whatsappButton: "تواصل عبر واتساب", whatsappNote: "سيفتح واتساب برسالة طلب سعر جاهزة إلى رقم المبيعات.",
     footerLine: "خبرة مصرية في صباغة وتجهيز الأقمشة.", menu: "فتح القائمة", close: "إغلاق القائمة",
     language: "اللغة", progress: "تقدم القراءة",
   },
@@ -55,9 +55,9 @@ const copy = {
     servicesKicker: "Integrated process", servicesTitle: "Every stage under one system.",
     materialsKicker: "Materials", materialsTitle: "Flexible processing for your requirements.",
     qualityKicker: "Our method", qualityTitle: "Precision is part of the process, not a final step.",
-    formKicker: "Start an inquiry", formTitle: "Tell us about your next production run.",
-    mailNote: "Submitting opens your email app with a prepared message. This website does not store your data.",
-    submit: "Prepare quote email", consent: "I consent to my details being used only to answer this inquiry.",
+    formKicker: "Direct contact", formTitle: "Start your request on WhatsApp.",
+    whatsappLead: "Chat directly with our sales team and share your fabric, quantity and required service in the conversation.",
+    whatsappButton: "Continue to WhatsApp", whatsappNote: "WhatsApp will open with a prepared quotation request to our sales number.",
     footerLine: "Egyptian expertise in fabric dyeing and finishing.", menu: "Open menu", close: "Close menu",
     language: "Language", progress: "Reading progress",
   },
@@ -115,6 +115,10 @@ export default function ConceptBClient() {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const t = copy[locale];
   const isAr = locale === "ar";
+  const whatsappMessage = isAr
+    ? "مرحباً، أريد طلب عرض سعر من الخماسية للصناعات النسيجية."
+    : "Hello, I would like to request a quotation from Al Khomassia For Textile Industries.";
+  const whatsappHref = `https://wa.me/201273933043?text=${encodeURIComponent(whatsappMessage)}`;
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -317,14 +321,6 @@ export default function ConceptBClient() {
     window.scrollTo({ top: start + distance * (index / (scenes.length - 1)), behavior: reducedMotion ? "auto" : "smooth" });
   }, [reducedMotion]);
 
-  const submitInquiry = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const subject = isAr ? "طلب عرض سعر — موقع الخماسية" : "Quotation request — Al Khomassia website";
-    const body = Array.from(data.entries()).filter(([key]) => key !== "consent").map(([key, value]) => `${key}: ${value}`).join("\n");
-    window.location.href = `mailto:sales@alkhomassiaeg.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  };
-
   const closeMenu = () => { setMenuOpen(false); menuButtonRef.current?.focus(); };
 
   return (
@@ -438,18 +434,14 @@ export default function ConceptBClient() {
 
         <section className="contact" id="contact">
           <div className="contact-intro"><p className="eyebrow" data-reveal>{t.formKicker}</p><h2 data-reveal>{t.formTitle}</h2><div className="contact-lines"><a href="tel:+201273933043" dir="ltr">+20 127 393 3043</a><a href="mailto:sales@alkhomassiaeg.com">sales@alkhomassiaeg.com</a><p>{isAr ? "العاشر من رمضان · المنطقة الصناعية A4 · مصر" : "10th of Ramadan City · Industrial Zone A4 · Egypt"}</p></div></div>
-          <form onSubmit={submitInquiry} className="inquiry-form">
-            <label><span>{isAr ? "الاسم" : "Name"}</span><input name="name" required autoComplete="name" /></label>
-            <label><span>{isAr ? "الشركة" : "Company"}</span><input name="company" required autoComplete="organization" /></label>
-            <label><span>{isAr ? "الهاتف" : "Phone"}</span><input name="phone" required inputMode="tel" autoComplete="tel" dir="ltr" /></label>
-            <label><span>{isAr ? "البريد الإلكتروني" : "Email"}</span><input name="email" required type="email" autoComplete="email" dir="ltr" /></label>
-            <label><span>{isAr ? "نوع القماش" : "Fabric type"}</span><select name="fabric"><option>{isAr ? "قطن" : "Cotton"}</option><option>{isAr ? "بوليستر" : "Polyester"}</option><option>{isAr ? "ممزوج" : "Blended"}</option></select></label>
-            <label><span>{isAr ? "الكمية المتوقعة" : "Expected quantity"}</span><input name="quantity" /></label>
-            <label className="wide"><span>{isAr ? "الخدمة المطلوبة" : "Requested service"}</span><select name="service"><option>{isAr ? "صباغة" : "Dyeing"}</option><option>{isAr ? "تجهيز" : "Finishing"}</option><option>{isAr ? "صباغة وتجهيز" : "Dyeing & finishing"}</option></select></label>
-            <label className="wide"><span>{isAr ? "تفاصيل الطلب" : "Inquiry details"}</span><textarea name="message" rows={4} /></label>
-            <label className="consent wide"><input type="checkbox" name="consent" required /><span>{t.consent}</span></label>
-            <p className="form-note wide">{t.mailNote}</p><button className="button wide" type="submit">{t.submit}</button>
-          </form>
+          <div className="whatsapp-card" data-reveal>
+            <span className="whatsapp-label" dir="ltr">WhatsApp</span>
+            <p>{t.whatsappLead}</p>
+            <a className="button whatsapp-button" href={whatsappHref} target="_blank" rel="noopener noreferrer">
+              <span>{t.whatsappButton}</span><b aria-hidden="true">↗</b>
+            </a>
+            <small>{t.whatsappNote}</small>
+          </div>
         </section>
       </main>
 
