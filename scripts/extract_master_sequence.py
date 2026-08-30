@@ -61,7 +61,18 @@ def mobile_center(progress: float) -> float:
     return 0.50
 
 
-def extract(master: Path, project_root: Path, desktop_count: int, mobile_count: int) -> dict[str, object]:
+def extract(
+    master: Path,
+    project_root: Path,
+    desktop_count: int,
+    mobile_count: int,
+    desktop_width: int,
+    desktop_height: int,
+    mobile_width: int,
+    mobile_height: int,
+    desktop_quality: int,
+    mobile_quality: int,
+) -> dict[str, object]:
     capture = cv2.VideoCapture(str(master))
     total = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = float(capture.get(cv2.CAP_PROP_FPS))
@@ -96,18 +107,30 @@ def extract(master: Path, project_root: Path, desktop_count: int, mobile_count: 
             decoded += 1
         if source_index in desktop_lookup:
             index = desktop_lookup[source_index]
-            write_jpeg(desktop / f"f{index:03d}.jpg", cover(frame, 1280, 720), 80)
+            write_jpeg(
+                desktop / f"f{index:03d}.jpg",
+                cover(frame, desktop_width, desktop_height),
+                desktop_quality,
+            )
         if source_index in mobile_lookup:
             index = mobile_lookup[source_index]
             progress = source_index / max(1, total - 1)
-            write_jpeg(mobile / f"f{index:03d}.jpg", cover(frame, 720, 1280, mobile_center(progress)), 76)
+            write_jpeg(
+                mobile / f"f{index:03d}.jpg",
+                cover(frame, mobile_width, mobile_height, mobile_center(progress)),
+                mobile_quality,
+            )
         if source_index in chapter_lookup:
             chapter = chapter_lookup[source_index] + 1
             name = [
                 "exterior", "entry", "receiving", "lab", "dyeing",
                 "stenter", "finishing", "quality", "warehouse", "exit",
             ][chapter - 1]
-            write_jpeg(fallbacks / f"{chapter:02d}-{name}.jpg", cover(frame, 1280, 720), 84)
+            write_jpeg(
+                fallbacks / f"{chapter:02d}-{name}.jpg",
+                cover(frame, desktop_width, desktop_height),
+                min(88, desktop_quality + 2),
+            )
         source_index += 1
     capture.release()
 
@@ -135,16 +158,16 @@ def extract(master: Path, project_root: Path, desktop_count: int, mobile_count: 
         },
         "desktop": {
             "count": desktop_count,
-            "width": 1280,
-            "height": 720,
-            "quality": 80,
+            "width": desktop_width,
+            "height": desktop_height,
+            "quality": desktop_quality,
             "bytes": sum(path.stat().st_size for path in desktop_files),
         },
         "mobile": {
             "count": mobile_count,
-            "width": 720,
-            "height": 1280,
-            "quality": 76,
+            "width": mobile_width,
+            "height": mobile_height,
+            "quality": mobile_quality,
             "bytes": sum(path.stat().st_size for path in mobile_files),
         },
         "chapter_fallbacks": 10,
@@ -160,11 +183,28 @@ def main() -> None:
     parser.add_argument("project_root", type=Path)
     parser.add_argument("--desktop-count", type=int, default=225)
     parser.add_argument("--mobile-count", type=int, default=113)
+    parser.add_argument("--desktop-width", type=int, default=1920)
+    parser.add_argument("--desktop-height", type=int, default=1080)
+    parser.add_argument("--mobile-width", type=int, default=1080)
+    parser.add_argument("--mobile-height", type=int, default=1920)
+    parser.add_argument("--desktop-quality", type=int, default=82)
+    parser.add_argument("--mobile-quality", type=int, default=78)
     args = parser.parse_args()
     if not args.master.is_file():
         raise FileNotFoundError(args.master)
 
-    record = extract(args.master, args.project_root, args.desktop_count, args.mobile_count)
+    record = extract(
+        args.master,
+        args.project_root,
+        args.desktop_count,
+        args.mobile_count,
+        args.desktop_width,
+        args.desktop_height,
+        args.mobile_width,
+        args.mobile_height,
+        args.desktop_quality,
+        args.mobile_quality,
+    )
     record_path = args.project_root / "public" / "assets" / "generation-records" / "supplied-master-sequence.json"
     record_path.parent.mkdir(parents=True, exist_ok=True)
     record_path.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")

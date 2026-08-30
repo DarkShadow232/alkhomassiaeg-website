@@ -1,6 +1,6 @@
 # Concept B Asset Manifest
 
-Last reviewed: 2026-08-23
+Last reviewed: 2026-08-30
 
 ## Brand and source references
 
@@ -13,10 +13,10 @@ Last reviewed: 2026-08-23
 
 ## Current cinematic media
 
-The production canvas sequence is extracted from the client-supplied continuous master at `C:\Users\Omar Mohamed Paşa\Desktop\New folder (3)\website\1.mp4`. It is 45.033 seconds at 30 fps and 1920×1080. Its hash, dimensions, counts and output verification are recorded in `public/assets/generation-records/supplied-master-sequence.json`.
+The production canvas sequence is extracted from the client-supplied continuous 4K master at `C:\Users\Omar Mohamed Paşa\Desktop\New folder (3)\website\1.mp4`. It is 45.033 seconds at 30 fps and 3840×2160. Its hash, dimensions, counts and output verification are recorded in `public/assets/generation-records/supplied-master-sequence.json`.
 
-- Desktop: `public/assets/sequence-desktop/f000.jpg`–`f224.jpg` (225 frames, 1280×720).
-- Mobile: `public/assets/sequence-mobile/f000.jpg`–`f112.jpg` (113 purposeful 9:16 crops, 720×1280).
+- Desktop: `public/assets/sequence-desktop/f000.jpg`–`f224.jpg` (225 Full HD frames, 1920×1080).
+- Mobile: `public/assets/sequence-mobile/f000.jpg`–`f112.jpg` (113 purposeful 9:16 crops, 1080×1920).
 - Both sequences include the source opening and ending frames, preserving the intentional exterior loop.
 - All 338 generated frames exist and decode successfully.
 

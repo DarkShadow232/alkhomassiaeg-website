@@ -19,9 +19,9 @@ The supplied film is distinct from both the older `khomassia-flight/assets/vid/l
 
 ## Technical result
 
-- Desktop sequence: 225 frames, 1280×720 JPEG quality 80.
-- Mobile sequence: 113 frames, 720×1280 JPEG quality 76 with time-range crop anchors.
-- Original master: 1920×1080, 30 fps, 1,351 frames, 45.033 seconds.
+- Desktop sequence: 225 Full HD frames, 1920×1080 JPEG quality 82.
+- Mobile sequence: 113 frames, 1080×1920 JPEG quality 78 with time-range crop anchors.
+- Original master: 3840×2160, 30 fps, 1,351 frames, 45.033 seconds.
 - The opening and ending exterior views create a natural loop; no synthetic transition was added.
 - All generated JPEGs were reopened and decoded after extraction.
 - Exact source hash, dimensions, counts and output sizes live in `public/assets/generation-records/supplied-master-sequence.json`.

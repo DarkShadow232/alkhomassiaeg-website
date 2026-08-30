@@ -1,27 +1,27 @@
 {
   "source_master": {
     "source": "C:\\Users\\Omar Mohamed Paşa\\Desktop\\New folder (3)\\website\\1.mp4",
-    "bytes": 67081501,
-    "sha256": "e44c07d3f6a53dbdd832945f95b21a49125c4c7b314ae81835d3ddeeac2fe956",
-    "width": 1920,
-    "height": 1080,
+    "bytes": 210152721,
+    "sha256": "bdc60fe22f89367066ed4bc977fa73cb31e7de556d6d0b43a3dcf4baa28bb67c",
+    "width": 3840,
+    "height": 2160,
     "fps": 30.0,
     "source_frames": 1351,
     "duration_seconds": 45.03333333333333
   },
   "desktop": {
     "count": 225,
-    "width": 1280,
-    "height": 720,
-    "quality": 80,
-    "bytes": 27190411
+    "width": 1920,
+    "height": 1080,
+    "quality": 82,
+    "bytes": 54496335
   },
   "mobile": {
     "count": 113,
-    "width": 720,
-    "height": 1280,
-    "quality": 76,
-    "bytes": 9530835
+    "width": 1080,
+    "height": 1920,
+    "quality": 78,
+    "bytes": 19171767
   },
   "chapter_fallbacks": 10,
   "sampling": "even sampling across the continuous 45-second source, including first and last frames",

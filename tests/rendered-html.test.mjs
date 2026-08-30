@@ -32,10 +32,11 @@ test("server-renders the Arabic-first Concept B site", async () => {
 });
 
 test("ships the canvas, accessibility and responsive sequence contracts", async () => {
-  const [client, css, packageJson, fallbackFiles, desktopFrames, mobileFrames] = await Promise.all([
+  const [client, css, packageJson, generationRecord, fallbackFiles, desktopFrames, mobileFrames] = await Promise.all([
     readFile(new URL("../app/ConceptBClient.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
+    readFile(new URL("../public/assets/generation-records/supplied-master-sequence.json", import.meta.url), "utf8"),
     readdir(new URL("../public/assets/fallbacks/", import.meta.url)),
     readdir(new URL("../public/assets/sequence-desktop/", import.meta.url)),
     readdir(new URL("../public/assets/sequence-mobile/", import.meta.url)),
@@ -61,6 +62,13 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
   assert.equal(fallbackFiles.filter((file) => /\.jpg$/i.test(file)).length, 10);
   assert.equal(desktopFrames.filter((file) => /^f\d{3}\.jpg$/i.test(file)).length, 225);
   assert.equal(mobileFrames.filter((file) => /^f\d{3}\.jpg$/i.test(file)).length, 113);
+  const media = JSON.parse(generationRecord);
+  assert.equal(media.source_master.width, 3840);
+  assert.equal(media.source_master.height, 2160);
+  assert.deepEqual(
+    [media.desktop.width, media.desktop.height, media.mobile.width, media.mobile.height],
+    [1920, 1080, 1080, 1920],
+  );
   await access(new URL("../CONTENT_AUDIT.md", import.meta.url));
   await access(new URL("../HIGGSFIELD-PROMPTS-CONCEPT-B.md", import.meta.url));
   await access(new URL("../ASSET_MANIFEST.md", import.meta.url));
