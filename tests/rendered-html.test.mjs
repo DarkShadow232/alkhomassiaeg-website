@@ -45,6 +45,7 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
   assert.match(client, /getContext\("2d"\)/);
   assert.match(client, /Math\.min\(2, window\.devicePixelRatio/);
   assert.match(client, /prefers-reduced-motion: reduce/);
+  assert.match(client, /hero-lockup-gold-3d-transparent\.png/);
   assert.match(client, /window\.setTimeout\(\(\) => setFilmReady\(true\), 9000\)/);
   assert.match(client, /mailto:sales@alkhomassiaeg\.com/);
   assert.doesNotMatch(client, /video\.currentTime|<video/);
@@ -72,4 +73,5 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
   await access(new URL("../CONTENT_AUDIT.md", import.meta.url));
   await access(new URL("../HIGGSFIELD-PROMPTS-CONCEPT-B.md", import.meta.url));
   await access(new URL("../ASSET_MANIFEST.md", import.meta.url));
+  await access(new URL("../public/assets/brand/hero-lockup-gold-3d-transparent.png", import.meta.url));
 });

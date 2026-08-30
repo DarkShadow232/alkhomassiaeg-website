@@ -381,10 +381,10 @@ export default function ConceptBClient() {
           <h1 className="sr-only" id="hero-title">{t.hero}</h1>
           <div className="hero-emblem" aria-hidden="true">
             <img
-              src="/assets/brand/logo-arabic-lockup-transparent.png"
+              src="/assets/brand/hero-lockup-gold-3d-transparent.png"
               alt=""
-              width={769}
-              height={621}
+              width={651}
+              height={527}
               fetchPriority="high"
             />
           </div>
