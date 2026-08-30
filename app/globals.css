@@ -282,7 +282,7 @@ footer :focus-visible,
 .hero-grain { display: none; }
 .hero-emblem { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; animation: emblemIn 1.05s .1s var(--ease-out) both; }
 .hero-emblem > img {
-  position: relative; z-index: 1; width: min(769px, 46vw); height: auto;
+  position: relative; z-index: 1; width: min(650px, 39vw); height: auto;
   filter: drop-shadow(0 14px 30px rgba(0, 0, 0, .3));
   animation: logoFloat 5.8s ease-in-out 1.1s infinite;
   will-change: transform;
@@ -546,7 +546,7 @@ footer > div a:hover { color: var(--gold-light); }
   .route button.active i { width: 22px; }
   .stats-grid article { min-height: 150px; }
   .scroll-cue { bottom: calc(18px + env(safe-area-inset-bottom)); }
-  .hero-emblem > img { width: min(769px, 92vw); }
+  .hero-emblem > img { width: min(650px, 84vw); }
   .static-chapters article { min-height: 62svh; }
   /* Comfortable touch targets on phones */
   .logo-lockup { min-height: var(--tap); }
