@@ -8,9 +8,9 @@ Last reviewed: 2026-08-30
 |---|---|---|
 | `public/assets/brand/logo.png` | Authoritative standalone Arabic emblem | Approved supplied asset; never AI-generated or altered |
 | `public/assets/brand/hero-lockup-gold-3d-transparent.png` | Current Hero Arabic lockup | Exact user-supplied 3D gold artwork with only the white paper removed |
-| `public/assets/references/wpp.png` | Marketing facts and Egypt contact source | Reference only |
-| `public/assets/references/visual-identity.png` | Palette, typography and motif reference | Reference only; sample contact details rejected |
-| `public/assets/references/factory/factory-photo-*.jpeg` | Ten selected raw factory references for machinery, scale, architecture and fabric paths | Approved as physical-truth references; not final marketing photography |
+| `assets/references/wpp.png` | Marketing facts and Egypt contact source | Reference only; excluded from the public bundle |
+| `assets/references/visual-identity.png` | Palette, typography and motif reference | Reference only; sample contact details rejected; excluded from the public bundle |
+| `assets/references/factory/factory-photo-*.jpeg` | Ten selected raw factory references for machinery, scale, architecture and fabric paths | Approved as physical-truth references; not final marketing photography; excluded from the public bundle |
 
 ## Current cinematic media
 

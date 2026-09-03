@@ -30,8 +30,8 @@ This file records the factual basis for the Concept B website. Claims marked **p
 ## Source authority
 
 1. `public/assets/brand/logo.png` — exact emblem; visual authority only.
-2. `public/assets/references/wpp.png` — approved facts and Egyptian contact details.
-3. `public/assets/references/visual-identity.png` — visual reference only; sample/Saudi contact details must never be used.
+2. `assets/references/wpp.png` — approved facts and Egyptian contact details.
+3. `assets/references/visual-identity.png` — visual reference only; sample/Saudi contact details must never be used.
 4. `ALKHOMASSIA_CONCEPT_B_CODEX_BRIEF.md` — Concept B creative and content authority.
 5. Existing factory photography — visual fallback/reference, not evidence for numerical claims.
 
@@ -41,4 +41,3 @@ This file records the factual basis for the Concept B website. Claims marked **p
 - No `+966` telephone number, Saudi address or `info@alkhomassia.com` address is used.
 - No certification, customer, award, export-market, machine-brand or testimonial claim is invented.
 - The quote form honestly opens a prepared email because no storage/backend is configured.
-
