@@ -30,6 +30,7 @@ The ten files under `public/assets/fallbacks/` remain as the static chapter expe
 | 01 Exterior | `01-exterior.jpg` | `sequence-desktop` / `sequence-mobile` frames for V01 |
 | 02 Entry | `02-entry.jpg` | frames for V02 |
 | 03 Receiving | `03-receiving.jpg` | frames for V03 |
+| Materials section | `public/assets/references/materials-factory-floor.jpeg` | User-supplied factory-floor photograph |
 | 04 Laboratory | `04-lab.jpg` | frames for V04 |
 | 05 Dyeing | `05-dyeing.jpg` | representative approval scene, then frames for V05 |
 | 06 Stenter | `06-stenter.jpg` | frames for V06 |

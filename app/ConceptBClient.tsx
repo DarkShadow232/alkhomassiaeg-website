@@ -423,7 +423,7 @@ export default function ConceptBClient() {
         </section>
 
         <section className="materials" id="materials">
-          <div className="materials-image"><img src="/assets/fallbacks/03-receiving.jpg" alt={isAr ? "لفات قماش داخل المصنع" : "Fabric rolls inside the factory"} loading="lazy" /></div>
+          <div className="materials-image"><img src="/assets/references/materials-factory-floor.jpeg" alt={isAr ? "خطوط تجهيز الأقمشة داخل المصنع" : "Fabric finishing production lines inside the factory"} width={1448} height={1086} loading="lazy" /></div>
           <div className="materials-copy"><p className="eyebrow" data-reveal>{t.materialsKicker}</p><h2 data-reveal>{t.materialsTitle}</h2><div className="material-row" data-reveal><span>01</span><h3>{isAr ? "القطن" : "Cotton"}</h3></div><div className="material-row" data-reveal><span>02</span><h3>{isAr ? "البوليستر" : "Polyester"}</h3></div><div className="material-row" data-reveal><span>03</span><h3>{isAr ? "الأقمشة الممزوجة" : "Blended fabrics"}</h3></div><p>{isAr ? "تُضبط مراحل الصباغة والتجهيز وفق نوع الخامة ومتطلبات التشغيلة." : "Dyeing and finishing stages are set around material type and production requirements."}</p></div>
         </section>
 

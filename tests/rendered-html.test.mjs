@@ -48,6 +48,7 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
   assert.match(client, /Math\.min\(2, window\.devicePixelRatio/);
   assert.match(client, /prefers-reduced-motion: reduce/);
   assert.match(client, /hero-lockup-gold-3d-transparent\.png/);
+  assert.match(client, /materials-factory-floor\.jpeg/);
   assert.match(client, /window\.setTimeout\(\(\) => setFilmReady\(true\), 9000\)/);
   assert.match(client, /mailto:sales@alkhomassiaeg\.com/);
   assert.match(client, /wa\.me\/201273933043/);
