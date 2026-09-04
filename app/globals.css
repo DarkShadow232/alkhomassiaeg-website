@@ -42,7 +42,7 @@
   --font-ar-body: "Tajawal", "Segoe UI", sans-serif;
   --font-latin: "Montserrat", "Segoe UI", sans-serif;
   --step-eyebrow: clamp(0.68rem, 0.62rem + 0.2vw, 0.78rem);
-  --step-body: clamp(0.98rem, 0.93rem + 0.24vw, 1.11rem);
+  --step-body: clamp(1rem, 0.93rem + 0.24vw, 1.11rem);
   --step-lead: clamp(1.06rem, 0.98rem + 0.42vw, 1.32rem);
   --step-h3: clamp(1.35rem, 1.15rem + 0.95vw, 2.2rem);
   --step-h2: clamp(2rem, 1.4rem + 2.6vw, 4.1rem);
@@ -92,7 +92,7 @@ body.menu-open { overflow: hidden; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 a { color: inherit; }
-img { display: block; max-width: 100%; }
+img { display: block; max-width: 100%; height: auto; }
 h1, h2, h3 { text-wrap: balance; }
 p { text-wrap: pretty; }
 
@@ -493,13 +493,39 @@ footer > div a:hover { color: var(--gold-light); }
 @media (max-width: 1180px) {
   .desktop-nav { display: none; }
   .menu-button { display: grid; }
+  .logo-lockup { min-height: var(--tap); }
+  .scroll-cue { min-width: var(--tap); }
+  .lang-switch button { min-width: var(--tap); min-height: var(--tap); }
+  .route button { min-height: var(--tap); }
+  .menu-contact a, footer > div a { min-height: var(--tap); }
   .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .quality-grid { grid-template-columns: 1fr; }
   .quality-grid article { min-height: 0; }
   .contact { grid-template-columns: 1fr; }
   .materials { grid-template-columns: 1fr; }
-  .materials-image { min-height: 54svh; }
+  .materials-image { min-height: 0; aspect-ratio: 4 / 3; }
   .scene-copy { width: min(560px, calc(100vw - var(--gutter) * 2 - 70px)); }
+}
+
+/* The desktop sequence is 16:9. Below the full desktop layout it is centred
+   inside the sticky viewport at its native ratio, preventing distortion while
+   the stage, captions and existing ScrollTrigger range remain unchanged. */
+@media (min-width: 761px) and (max-width: 1180px) {
+  .film canvas {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: min(100%, calc(100svh * 16 / 9));
+    height: auto;
+    aspect-ratio: 16 / 9;
+    transform: translate(-50%, -50%);
+  }
+  .preview-badge {
+    top: max(calc(var(--header-h) + 18px), calc((100svh - 56.25vw) / 2 + 18px));
+  }
+  .scene-copy {
+    bottom: max(clamp(76px, 13vh, 140px), calc((100svh - 56.25vw) / 2 + 32px));
+  }
 }
 
 @media (max-width: 860px) {
@@ -519,12 +545,12 @@ footer > div a:hover { color: var(--gold-light); }
   .logo-lockup.compact small { display: none; }
   .header-actions .button-small { display: none; }
   .film { height: 820svh; }
-  .preview-badge { top: calc(var(--header-h) + 12px); padding: 7px 13px; font-size: .64rem; }
-  .scene-copy { inset-inline-start: 16px; bottom: 92px; width: calc(100vw - 32px - 46px); padding: 18px 20px; }
+  .preview-badge { top: max(calc(var(--header-h) + 12px), calc((100svh - 177.7778vw) / 2 + 16px)); padding: 7px 13px; font-size: .64rem; }
+  .scene-copy { inset-inline-start: 16px; bottom: max(92px, calc((100svh - 177.7778vw) / 2 + 16px)); width: calc(100vw - 32px - 58px); padding: 18px 20px; }
   .scene-copy h3 { font-size: clamp(1.5rem, 7.4vw, 2.3rem); }
   .scene-copy > p { font-size: .82rem; }
   .route { inset-inline-end: 8px; padding: 8px 5px; gap: 0; }
-  .route button { min-height: var(--tap); min-width: 32px; justify-content: center; padding: 0; }
+  .route button { min-height: var(--tap); min-width: var(--tap); justify-content: center; padding: 0; }
   .route button span { display: none; }
   .route i { width: 12px; }
   .route button.active i { width: 22px; }
@@ -534,8 +560,22 @@ footer > div a:hover { color: var(--gold-light); }
   .static-chapters article { min-height: 62svh; }
   /* Comfortable touch targets on phones */
   .logo-lockup { min-height: var(--tap); }
-  .lang-switch button { min-width: 42px; min-height: 38px; }
+  .lang-switch button { min-width: var(--tap); min-height: var(--tap); }
   .contact-lines a, footer > div a { min-height: var(--tap); }
+}
+
+/* The phone sequence is 9:16. Keeping the canvas at the source ratio avoids
+   stretching or edge loss while preserving the full-height sticky stage. */
+@media (max-width: 760px) {
+  .film canvas {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: min(100%, calc(100svh * 9 / 16));
+    height: auto;
+    aspect-ratio: 9 / 16;
+    transform: translate(-50%, -50%);
+  }
 }
 
 @media (max-width: 380px) {

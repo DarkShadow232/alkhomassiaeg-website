@@ -73,6 +73,11 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
   assert.doesNotMatch(client, /مستعدون|اللفة النهائية/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(css, /\.film-stage \{ position: sticky/);
+  assert.match(css, /--step-body: clamp\(1rem/);
+  assert.match(css, /aspect-ratio: 9 \/ 16/);
+  assert.match(css, /aspect-ratio: 16 \/ 9/);
+  assert.match(css, /\.route button \{ min-height: var\(--tap\); min-width: var\(--tap\)/);
+  assert.match(css, /\.materials-image \{ min-height: 0; aspect-ratio: 4 \/ 3; \}/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
   assert.equal(fallbackFiles.filter((file) => /\.jpg$/i.test(file)).length, 10);
   assert.equal(desktopFrames.filter((file) => /^f\d{3}\.jpg$/i.test(file)).length, 225);
