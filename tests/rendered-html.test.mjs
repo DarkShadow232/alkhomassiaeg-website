@@ -74,8 +74,8 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(css, /\.film-stage \{ position: sticky/);
   assert.match(css, /--step-body: clamp\(1rem/);
-  assert.match(css, /aspect-ratio: 9 \/ 16/);
-  assert.match(css, /aspect-ratio: 16 \/ 9/);
+  assert.match(css, /\.film canvas \{ position: absolute; inset: 0; width: 100%; height: 100%; \}/);
+  assert.doesNotMatch(css, /aspect-ratio: (?:9 \/ 16|16 \/ 9)/);
   assert.match(css, /\.route button \{ min-height: var\(--tap\); min-width: var\(--tap\)/);
   assert.match(css, /\.materials-image \{ min-height: 0; aspect-ratio: 4 \/ 3; \}/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
