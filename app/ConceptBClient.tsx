@@ -23,6 +23,9 @@ const scenes = [
 
 const DESKTOP_FRAME_COUNT = 225;
 const MOBILE_FRAME_COUNT = 113;
+const SCROLL_LERP_FACTOR = 0.12;
+const SCROLL_SETTLE_EPSILON = 0.00015;
+const BASE_FRAME_MS = 1000 / 60;
 
 const copy = {
   ar: {
@@ -244,11 +247,9 @@ export default function ConceptBClient() {
     const image = source[index];
     if (!canvas || !image?.complete || !image.naturalWidth) return;
     if (currentFrame.current === index && canvas.width) return;
-    const rect = canvas.getBoundingClientRect();
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const width = Math.max(1, Math.round(rect.width * dpr));
-    const height = Math.max(1, Math.round(rect.height * dpr));
-    if (canvas.width !== width || canvas.height !== height) { canvas.width = width; canvas.height = height; }
+    const width = canvas.width;
+    const height = canvas.height;
+    if (!width || !height) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.fillStyle = "#11100e";
@@ -264,13 +265,36 @@ export default function ConceptBClient() {
     if (!filmReady || reducedMotion || !filmRef.current) return;
     gsap.registerPlugin(ScrollTrigger);
     let animationFrame = 0;
+    let lastTimestamp = 0;
 
-    const renderProgress = () => {
-      animationFrame = 0;
+    /* Canvas geometry is measured only when its size changes. The hot render
+       loop below performs no layout reads, which avoids forced reflow while
+       the user is scrubbing through the sequence. */
+    const syncCanvasSize = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return false;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const width = Math.max(1, Math.round(rect.width * dpr));
+      const height = Math.max(1, Math.round(rect.height * dpr));
+      if (canvas.width === width && canvas.height === height) return false;
+      canvas.width = width;
+      canvas.height = height;
+      currentFrame.current = -1;
+      return true;
+    };
+
+    const renderProgress = (timestamp: number) => {
       const current = progressRef.current;
       const target = targetProgressRef.current;
       const delta = target - current;
-      const next = Math.abs(delta) < 0.00015 ? target : current + delta * 0.14;
+      const elapsedFrames = lastTimestamp
+        ? Math.min(3, Math.max(0.25, (timestamp - lastTimestamp) / BASE_FRAME_MS))
+        : 1;
+      const lerp = 1 - Math.pow(1 - SCROLL_LERP_FACTOR, elapsedFrames);
+      const settled = Math.abs(delta) < SCROLL_SETTLE_EPSILON;
+      const next = settled ? target : current + delta * lerp;
+      lastTimestamp = timestamp;
       progressRef.current = next;
 
       const frameIndex = Math.min(imagesRef.current.length - 1, Math.round(next * (imagesRef.current.length - 1)));
@@ -282,12 +306,21 @@ export default function ConceptBClient() {
       if (filmBarRef.current) filmBarRef.current.style.transform = `scaleX(${next})`;
       drawFrame(frameIndex);
 
-      if (next !== target) animationFrame = window.requestAnimationFrame(renderProgress);
+      if (settled) {
+        animationFrame = 0;
+        lastTimestamp = 0;
+      } else {
+        animationFrame = window.requestAnimationFrame(renderProgress);
+      }
     };
 
     const queueRender = () => {
-      if (!animationFrame) animationFrame = window.requestAnimationFrame(renderProgress);
+      if (animationFrame) return;
+      lastTimestamp = 0;
+      animationFrame = window.requestAnimationFrame(renderProgress);
     };
+
+    syncCanvasSize();
 
     const trigger = ScrollTrigger.create({
       trigger: filmRef.current,
@@ -304,10 +337,12 @@ export default function ConceptBClient() {
     setActiveScene(activeSceneRef.current);
     if (filmBarRef.current) filmBarRef.current.style.transform = `scaleX(${trigger.progress})`;
     drawFrame(Math.round(trigger.progress * (imagesRef.current.length - 1)));
-    const onResize = () => { currentFrame.current = -1; drawFrame(Math.round(progressRef.current * (imagesRef.current.length - 1))); };
-    window.addEventListener("resize", onResize);
+    const resizeObserver = new ResizeObserver(() => {
+      if (syncCanvasSize()) queueRender();
+    });
+    if (canvasRef.current) resizeObserver.observe(canvasRef.current);
     return () => {
-      window.removeEventListener("resize", onResize);
+      resizeObserver.disconnect();
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
       trigger.kill();
     };

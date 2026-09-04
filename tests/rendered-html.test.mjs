@@ -44,7 +44,16 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
     readdir(new URL("../public/assets/sequence-mobile/", import.meta.url)),
   ]);
   assert.match(client, /ScrollTrigger\.create/);
+  assert.match(client, /const SCROLL_LERP_FACTOR = 0\.12/);
+  assert.match(client, /1 - Math\.pow\(1 - SCROLL_LERP_FACTOR, elapsedFrames\)/);
+  assert.match(client, /if \(animationFrame\) return/);
+  assert.match(client, /new ResizeObserver/);
+  assert.match(client, /start: "top top"/);
+  assert.match(client, /end: "bottom bottom"/);
   assert.match(client, /getContext\("2d"\)/);
+  const drawFrameSource = client.slice(client.indexOf("function drawFrame"), client.indexOf("useEffect(() =>", client.indexOf("function drawFrame")));
+  assert.doesNotMatch(drawFrameSource, /getBoundingClientRect/);
+  assert.match(client, /reducedMotion \? <div className="static-chapters"/);
   assert.match(client, /Math\.min\(2, window\.devicePixelRatio/);
   assert.match(client, /prefers-reduced-motion: reduce/);
   assert.match(client, /hero-lockup-gold-3d-transparent\.png/);
