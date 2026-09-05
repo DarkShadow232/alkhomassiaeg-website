@@ -1,0 +1,61 @@
+# robots.txt — https://www.alkhomassiaeg.com/
+#
+# ACCESS INTENT: this site previously had no robots.txt, so every crawler was
+# already allowed everything. This file preserves that intent and states it
+# explicitly. It does not newly restrict any crawler.
+#
+# To opt OUT of AI training/answer crawlers later, change the relevant group's
+# "Allow: /" to "Disallow: /". Blocking them removes the site from AI answers.
+
+User-agent: *
+Allow: /
+# Internal image-optimisation endpoint (unused by this site, parameterised).
+Disallow: /_vinext/
+# Build assets must stay crawlable or search engines cannot render the page.
+Allow: /_next/static/
+
+# --- AI / generative answer engines (intentionally allowed) ---
+
+# OpenAI (ChatGPT browsing + training)
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic (Claude)
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# Google Gemini / AI Overviews (separate from Googlebot search indexing)
+User-agent: Google-Extended
+Allow: /
+
+# Common Crawl (a training corpus source for several models)
+User-agent: CCBot
+Allow: /
+
+# Microsoft Copilot
+User-agent: Bingbot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://www.alkhomassiaeg.com/sitemap.xml

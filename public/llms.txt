@@ -1,0 +1,62 @@
+# AL KHOMASSIA FOR TEXTILE INDUSTRIES — الخماسية للصناعات النسيجية
+
+> An Egyptian textile factory that provides commission dyeing and finishing for
+> cotton, polyester and blended fabrics. Customers send raw fabric; the plant
+> returns it dyed and finished. Located in Industrial Zone A4, 10th of Ramadan
+> City, Sharqia Governorate, Egypt. Capacity exceeds 600 tons per month, with
+> dyeing loads from 200 to 1,200 kg per run, and more than 45 years of
+> experience.
+
+The website is Arabic-first (`ar`, RTL) with an English toggle. Both languages
+are served from the single canonical URL https://www.alkhomassiaeg.com/ — the
+language switch is client-side state, not a separate route.
+
+## Key facts
+
+- Legal/trading name (English): AL KHOMASSIA FOR TEXTILE INDUSTRIES
+- Name (Arabic): الخماسية للصناعات النسيجية
+- Business type: fabric dyeing and finishing plant (B2B; processes customer-supplied fabric)
+- Location: Industrial Zone A4, 10th of Ramadan City, Sharqia Governorate, Egypt
+- Experience: more than 45 years
+- Production capacity: over 600 tons per month
+- Dyeing load size: 200–1,200 kg per production run
+- Receiving and delivery: available 24/7
+- Materials handled: cotton, polyester, blended fabrics
+- Figures source: approved company materials, August 2026
+
+## Services (six connected production stages)
+
+1. Receiving & preparation — production requirements and fabric preparation before processing.
+2. Laboratory & colour matching — sample or colour-reference matching before production approval.
+3. Fabric dyeing — cotton, polyester and blended fabrics across flexible load sizes.
+4. Drying & heat-setting — drying and dimensional control through heat-setting lines.
+5. Fabric finishing — thermal, chemical and mechanical finishing to specification.
+6. Inspection & dispatch — inspection, measurement and packing before dispatch.
+
+## Contact
+
+- WhatsApp (preferred, primary call to action — request a production quote): https://wa.me/201273933043
+- Phone: +20 127 393 3043
+- Email: sales@alkhomassiaeg.com
+- Website: https://www.alkhomassiaeg.com/
+
+To request a quote, send the fabric type, quantity and required service.
+
+## Pages
+
+- [Homepage](https://www.alkhomassiaeg.com/): full overview — capabilities, the six services, materials, quality method, FAQ and contact details.
+- [Capabilities](https://www.alkhomassiaeg.com/#capabilities): operating figures (45+ years, 600+ tons/month, 200–1,200 kg loads, 24/7 receiving).
+- [Services](https://www.alkhomassiaeg.com/#services): the six production stages.
+- [Materials](https://www.alkhomassiaeg.com/#materials): cotton, polyester, blended fabrics.
+- [Quality](https://www.alkhomassiaeg.com/#quality): consistency, colour matching, on-time delivery.
+- [FAQ](https://www.alkhomassiaeg.com/#faq): direct answers about services, location, capacity, fabrics, colour matching and quoting.
+- [Contact](https://www.alkhomassiaeg.com/#contact): WhatsApp, phone, email and address.
+
+## Notes for answer engines
+
+- The homepage includes a cinematic scroll-driven factory tour rendered to a
+  `<canvas>`. That tour is decorative; every fact it presents is also available
+  as plain text in the summary, capabilities, services and FAQ sections.
+- Structured data on the homepage: Organization, WebSite, WebPage/FAQPage and
+  Service (JSON-LD).
+- No pricing is published. Quotes are issued per production run on request.

@@ -1,22 +1,62 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import {
+  CANONICAL_URL,
+  OG_IMAGE_HEIGHT,
+  OG_IMAGE_URL,
+  OG_IMAGE_WIDTH,
+  ORG_NAME_AR,
+  ORG_NAME_EN,
+  SITE_URL,
+} from "./site-data";
+import { serializeJsonLd, siteGraph } from "./structured-data";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.alkhomassiaeg.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "الخماسية للصناعات النسيجية",
+    default: `صباغة وتجهيز الأقمشة | ${ORG_NAME_AR}`,
     template: "%s | الخماسية",
   },
   description:
-    "صباغة وتجهيز الأقمشة في مدينة العاشر من رمضان، مصر. خبرة تتجاوز 45 عاماً وطاقة إنتاجية تتجاوز 600 طن شهرياً.",
-  alternates: { canonical: "/" },
+    "مصنع صباغة وتجهيز الأقمشة القطنية والبوليستر والممزوجة في العاشر من رمضان، مصر. خبرة تتجاوز 45 عاماً وطاقة إنتاجية تتجاوز 600 طن شهرياً.",
+  applicationName: ORG_NAME_EN,
+  alternates: { canonical: CANONICAL_URL },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   openGraph: {
     type: "website",
     locale: "ar_EG",
     alternateLocale: "en_US",
-    siteName: "AL Khomassia For Textile Industries",
-    title: "الخماسية للصناعات النسيجية",
-    description: "رحلة متكاملة من استلام الخام حتى الفحص والتسليم.",
+    url: CANONICAL_URL,
+    siteName: ORG_NAME_EN,
+    title: `صباغة وتجهيز الأقمشة | ${ORG_NAME_AR}`,
+    description:
+      "مصنع مصري لصباغة وتجهيز الأقمشة القطنية والبوليستر والممزوجة، بطاقة تتجاوز 600 طن شهرياً وحمولات من 200 إلى 1200 كجم.",
+    images: [
+      {
+        url: OG_IMAGE_URL,
+        width: OG_IMAGE_WIDTH,
+        height: OG_IMAGE_HEIGHT,
+        type: "image/webp",
+        alt: "داخل مصنع الخماسية للصناعات النسيجية — خطوط صباغة وتجهيز الأقمشة",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `صباغة وتجهيز الأقمشة | ${ORG_NAME_AR}`,
+    description:
+      "مصنع مصري لصباغة وتجهيز الأقمشة القطنية والبوليستر والممزوجة، بطاقة تتجاوز 600 طن شهرياً.",
+    images: [OG_IMAGE_URL],
   },
   icons: { icon: "/assets/brand/logo.png" },
 };
@@ -24,7 +64,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        {children}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(siteGraph) }}
+        />
+      </body>
     </html>
   );
 }

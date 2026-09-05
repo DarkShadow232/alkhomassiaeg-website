@@ -3,8 +3,12 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { FAQ, SUMMARY } from "./site-data";
+
+type AnimationModules = {
+  gsap: typeof import("gsap")["default"];
+  ScrollTrigger: typeof import("gsap/ScrollTrigger")["ScrollTrigger"];
+};
 
 type Locale = "ar" | "en";
 
@@ -45,6 +49,11 @@ const copy = {
     whatsappButton: "تواصل عبر واتساب", whatsappNote: "سيفتح واتساب برسالة طلب سعر جاهزة إلى رقم المبيعات.",
     footerLine: "خبرة مصرية في صباغة وتجهيز الأقمشة.", menu: "فتح القائمة", close: "إغلاق القائمة",
     language: "اللغة", progress: "تقدم القراءة",
+    topic: "صباغة وتجهيز الأقمشة",
+    faqKicker: "أسئلة شائعة", faqTitle: "إجابات مباشرة عن الصباغة والتجهيز.",
+    linkServices: "مراحل الصباغة والتجهيز الست",
+    linkCapabilities: "الطاقة الإنتاجية والأرقام التشغيلية",
+    linkFaq: "الأسئلة الشائعة عن الصباغة والتجهيز",
   },
   en: {
     nav: ["Home", "The tour", "Capabilities", "Services", "Quality", "Contact"],
@@ -63,6 +72,11 @@ const copy = {
     whatsappButton: "Continue to WhatsApp", whatsappNote: "WhatsApp will open with a prepared quotation request to our sales number.",
     footerLine: "Egyptian expertise in fabric dyeing and finishing.", menu: "Open menu", close: "Close menu",
     language: "Language", progress: "Reading progress",
+    topic: "Fabric dyeing and finishing",
+    faqKicker: "Frequently asked questions", faqTitle: "Direct answers about dyeing and finishing.",
+    linkServices: "the six dyeing and finishing stages",
+    linkCapabilities: "production capacity and operating figures",
+    linkFaq: "frequently asked questions about dyeing and finishing",
   },
 } as const;
 
@@ -89,7 +103,7 @@ const navTargets = ["home", "film", "capabilities", "services", "quality", "cont
 function LogoLockup({ compact = false }: { compact?: boolean }) {
   return (
     <a className={`logo-lockup${compact ? " compact" : ""}`} href="#home" aria-label="الخماسية — الرئيسية">
-      <span className="brand-mark"><img src="/assets/brand/logo-transparent.png" alt="" width={2000} height={1600} /></span>
+      <span className="brand-mark"><img src="/assets/brand/logo-transparent.56028444d2d3.webp" alt="" width={2000} height={1600} loading={compact ? "eager" : "lazy"} /></span>
       <span><b>الخماسية</b><small>AL KHOMASSIA FOR TEXTILE INDUSTRIES</small></span>
     </a>
   );
@@ -104,6 +118,9 @@ export default function ConceptBClient() {
   const [activeScene, setActiveScene] = useState(0);
   const [loadProgress, setLoadProgress] = useState(0);
   const [filmReady, setFilmReady] = useState(false);
+  const [animation, setAnimation] = useState<AnimationModules | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const filmRef = useRef<HTMLElement>(null);
@@ -216,31 +233,117 @@ export default function ConceptBClient() {
   }, [menuOpen]);
 
   useEffect(() => {
-    if (reducedMotion) return;
+    if (reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const mobile = window.matchMedia("(max-width: 760px)").matches;
     const frameCount = mobile ? MOBILE_FRAME_COUNT : DESKTOP_FRAME_COUNT;
     const sequence = mobile ? "sequence-mobile" : "sequence-desktop";
-    const loaded: HTMLImageElement[] = [];
+    // Keep every frame index intact. Only the request order and readiness change.
+    const loaded = Array.from({ length: frameCount }, () => new Image());
+    const requested = new Set<number>();
+    const attempts = new Map<number, number>();
     let complete = 0;
-    let settled = 0;
-    const threshold = Math.ceil(frameCount * 0.6);
-    const finish = () => {
-      settled += 1;
-      setLoadProgress(Math.round((settled / frameCount) * 100));
-      if (complete >= threshold || settled === frameCount) setFilmReady(true);
-    };
-    Array.from({ length: frameCount }).forEach((_, index) => {
-      const image = new Image();
-      image.decoding = "async";
-      image.onload = () => { complete += 1; finish(); drawFrame(Math.round(progressRef.current * (frameCount - 1)), loaded); };
-      image.onerror = finish;
-      image.src = `/assets/${sequence}/f${String(index).padStart(3, "0")}.jpg`;
-      loaded[index] = image;
-    });
+    let inFlight = 0;
+    let disposed = false;
+    let near = false;
+    let visible = false;
+    let started = false;
+    let ready = false;
+    let modules: AnimationModules | null = null;
+    let initialIndex = 0;
     imagesRef.current = loaded;
-    const safety = window.setTimeout(() => setFilmReady(true), 9000);
-    return () => window.clearTimeout(safety);
-  }, [reducedMotion]);
+    currentFrame.current = -1;
+
+    const centerIndex = () => ready
+      ? Math.round(targetProgressRef.current * (frameCount - 1))
+      : initialIndex;
+    const markReady = () => {
+      const image = loaded[centerIndex()];
+      if (!ready && modules && image?.complete && image.naturalWidth) {
+        ready = true;
+        setAnimation(modules);
+        setFilmReady(true);
+      }
+    };
+
+    const pump = () => {
+      if (disposed || !started || !near) return;
+      const center = centerIndex();
+      // Prepare a small window before entry; fill the rest only while visible.
+      const candidates = Array.from({ length: frameCount }, (_, index) => index)
+        .filter((index) => !requested.has(index) && (visible || Math.abs(index - center) <= 6))
+        .sort((a, b) => Math.abs(a - center) - Math.abs(b - center));
+      while (inFlight < 3 && candidates.length) {
+        const index = candidates.shift()!;
+        const image = loaded[index];
+        requested.add(index);
+        attempts.set(index, (attempts.get(index) ?? 0) + 1);
+        inFlight += 1;
+        image.src = `/assets/${sequence}/f${String(index).padStart(3, "0")}.jpg`;
+      }
+    };
+    loaded.forEach((image, index) => {
+      image.decoding = "async";
+      image.fetchPriority = "low";
+      const failed = () => {
+        if (disposed) return;
+        inFlight -= 1;
+        if ((attempts.get(index) ?? 0) < 2) requested.delete(index);
+        else if (!ready && index === centerIndex()) setLoadError(true);
+        pump();
+      };
+      image.onload = async () => {
+        try { await image.decode(); } catch { failed(); return; }
+        if (disposed) return;
+        inFlight -= 1;
+        complete += 1;
+        setLoadProgress(Math.round((complete / frameCount) * 100));
+        markReady();
+        if (ready) drawFrame(Math.round(progressRef.current * (frameCount - 1)), loaded);
+        pump();
+      };
+      image.onerror = failed;
+    });
+
+    const start = () => {
+      if (disposed || started || !near || document.readyState !== "complete") return;
+      started = true;
+      setFilmReady(false);
+      setLoadError(false);
+      setLoadProgress(0);
+      const film = filmRef.current;
+      if (film) {
+        const distance = film.offsetHeight - window.innerHeight;
+        initialIndex = Math.round(Math.min(1, Math.max(0, distance > 0 ? (window.scrollY - film.offsetTop) / distance : 0)) * (frameCount - 1));
+      }
+      void Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(([gsapModule, triggerModule]) => {
+        if (disposed) return;
+        modules = { gsap: gsapModule.default, ScrollTrigger: triggerModule.ScrollTrigger };
+        markReady();
+      }).catch(() => { if (!disposed) setLoadError(true); });
+      pump();
+    };
+    const nearObserver = new IntersectionObserver(([entry]) => {
+      near = entry.isIntersecting;
+      start();
+      pump();
+    }, { rootMargin: "600px 0px" });
+    const visibleObserver = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      pump();
+    });
+    if (filmRef.current) {
+      nearObserver.observe(filmRef.current);
+      visibleObserver.observe(filmRef.current);
+    }
+    window.addEventListener("load", start, { once: true });
+    return () => {
+      disposed = true;
+      nearObserver.disconnect();
+      visibleObserver.disconnect();
+      window.removeEventListener("load", start);
+      loaded.forEach((image) => { image.onload = null; image.onerror = null; });
+    };
+  }, [reducedMotion, loadAttempt]);
 
   function drawFrame(index: number, source = imagesRef.current) {
     const canvas = canvasRef.current;
@@ -262,7 +365,8 @@ export default function ConceptBClient() {
   }
 
   useEffect(() => {
-    if (!filmReady || reducedMotion || !filmRef.current) return;
+    if (!filmReady || !animation || reducedMotion || !filmRef.current) return;
+    const { gsap, ScrollTrigger } = animation;
     gsap.registerPlugin(ScrollTrigger);
     let animationFrame = 0;
     let lastTimestamp = 0;
@@ -346,7 +450,7 @@ export default function ConceptBClient() {
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
       trigger.kill();
     };
-  }, [filmReady, reducedMotion]);
+  }, [filmReady, animation, reducedMotion]);
 
   const jumpToScene = useCallback((index: number) => {
     const film = filmRef.current;
@@ -401,7 +505,7 @@ export default function ConceptBClient() {
         <section className="hero" id="home" aria-labelledby="hero-title">
           <div className="hero-bg" aria-hidden="true">
             <img
-              src="/assets/hero/hero-factory-blur.png"
+              src="/assets/hero/hero-factory-blur.5c8cc607ef5b.webp"
               alt=""
               width={1672}
               height={941}
@@ -409,10 +513,10 @@ export default function ConceptBClient() {
             />
           </div>
           <div className="hero-grain" aria-hidden="true" />
-          <h1 className="sr-only" id="hero-title">{t.hero}</h1>
+          <h1 className="sr-only" id="hero-title">{t.topic} — {t.hero}</h1>
           <div className="hero-emblem" aria-hidden="true">
             <img
-              src="/assets/brand/hero-lockup-gold-3d-transparent.png"
+              src="/assets/brand/hero-lockup-gold-3d-transparent.5b6bb7feac96.webp"
               alt=""
               width={651}
               height={527}
@@ -425,16 +529,28 @@ export default function ConceptBClient() {
         <section className="intro-strip" aria-label={isAr ? "ملخص الجولة" : "Tour introduction"}>
           <p className="eyebrow" data-reveal>{t.filmKicker}</p>
           <h2 data-reveal>{t.filmTitle}</h2>
-          <p data-reveal>{isAr ? "الكاميرا تتبع مسار التشغيل الحقيقي عبر عشر محطات مترابطة." : "The camera follows the real production route across ten connected stages."}</p>
+          <p className="intro-lead" data-reveal>{isAr ? "الكاميرا تتبع مسار التشغيل الحقيقي عبر عشر محطات مترابطة." : "The camera follows the real production route across ten connected stages."}</p>
+          <div className="intro-summary" data-reveal>
+            <p>{isAr ? SUMMARY.ar : SUMMARY.en}</p>
+            <p className="intro-links">
+              <a href="#services">{t.linkServices}</a>
+              <a href="#capabilities">{t.linkCapabilities}</a>
+              <a href="#faq">{t.linkFaq}</a>
+            </p>
+          </div>
         </section>
 
         <section ref={filmRef} className={`film${reducedMotion ? " reduced" : ""}`} id="film" aria-label={isAr ? "جولة المصنع" : "Factory tour"}>
           {reducedMotion ? <div className="static-chapters">{scenes.map((scene, index) => <article key={scene.id}><img src={scene.image} alt={isAr ? scene.ar : scene.en} loading={index > 1 ? "lazy" : "eager"} /><div><span>{String(index + 1).padStart(2, "0")}</span><h3>{isAr ? scene.lineAr : scene.lineEn}</h3>{scene.factAr && <b>{isAr ? scene.factAr : scene.factEn}</b>}</div></article>)}</div> :
           <div className="film-stage">
+            <picture className="film-poster">
+              <source media="(max-width: 760px)" srcSet="/assets/posters/tour-mobile-bdc60fe2.webp" />
+              <img src="/assets/posters/tour-desktop-bdc60fe2.webp" alt="" width={1920} height={1080} loading="lazy" decoding="async" />
+            </picture>
             <canvas ref={canvasRef} aria-hidden="true" />
             <div className="film-shade" aria-hidden="true" />
             <div className="film-progress" aria-hidden="true"><span ref={filmBarRef} /></div>
-            {!filmReady && <div className="film-loader" role="status"><div><span style={{ width: `${loadProgress}%` }} /></div><p>{isAr ? `تهيئة الجولة ${loadProgress}%` : `Preparing the tour ${loadProgress}%`}</p></div>}
+            {!filmReady && <div className="film-loader" role="status"><div><span style={{ width: `${loadProgress}%` }} /></div><p>{loadError ? (isAr ? "تعذّر تحميل الجولة" : "The tour could not load") : (isAr ? "تهيئة الجولة" : "Preparing the tour")}</p>{loadError && <button className="button" type="button" onClick={() => setLoadAttempt((attempt) => attempt + 1)}>{isAr ? "حاول مجدداً" : "Retry"}</button>}</div>}
             <p className="preview-badge">{t.preview}</p>
             <div className="scene-copy" key={`${locale}-${activeScene}`}>
               <span>{String(activeScene + 1).padStart(2, "0")} / {String(scenes.length).padStart(2, "0")}</span>
@@ -459,12 +575,17 @@ export default function ConceptBClient() {
 
         <section className="materials" id="materials">
           <div className="materials-image"><img src="/assets/references/materials-factory-floor.jpeg" alt={isAr ? "خطوط تجهيز الأقمشة داخل المصنع" : "Fabric finishing production lines inside the factory"} width={1448} height={1086} loading="lazy" /></div>
-          <div className="materials-copy"><p className="eyebrow" data-reveal>{t.materialsKicker}</p><h2 data-reveal>{t.materialsTitle}</h2><div className="material-row" data-reveal><span>01</span><h3>{isAr ? "القطن" : "Cotton"}</h3></div><div className="material-row" data-reveal><span>02</span><h3>{isAr ? "البوليستر" : "Polyester"}</h3></div><div className="material-row" data-reveal><span>03</span><h3>{isAr ? "الأقمشة الممزوجة" : "Blended fabrics"}</h3></div><p>{isAr ? "تُضبط مراحل الصباغة والتجهيز وفق نوع الخامة ومتطلبات التشغيلة." : "Dyeing and finishing stages are set around material type and production requirements."}</p></div>
+          <div className="materials-copy"><p className="eyebrow" data-reveal>{t.materialsKicker}</p><h2 data-reveal>{t.materialsTitle}</h2><div className="material-row" data-reveal><span>01</span><h3>{isAr ? "القطن" : "Cotton"}</h3></div><div className="material-row" data-reveal><span>02</span><h3>{isAr ? "البوليستر" : "Polyester"}</h3></div><div className="material-row" data-reveal><span>03</span><h3>{isAr ? "الأقمشة المخلوطة" : "Blended fabrics"}</h3></div><p>{isAr ? "تُضبط مراحل الصباغة والتجهيز وفق نوع الخامة ومتطلبات التشغيلة." : "Dyeing and finishing stages are set around material type and production requirements."}</p></div>
         </section>
 
         <section className="section quality" id="quality">
           <div className="section-head"><p className="eyebrow" data-reveal>{t.qualityKicker}</p><h2 data-reveal>{t.qualityTitle}</h2></div>
           <div className="quality-grid" data-reveal><article><span>01</span><h3>{isAr ? "ثبات النتائج" : "Consistency"}</h3><p>{isAr ? "متابعة التشغيلة عبر مراحل الإنتاج للحفاظ على النتيجة المطلوبة." : "Monitoring through production to maintain the specified outcome."}</p></article><article><span>02</span><h3>{isAr ? "مطابقة اللون" : "Colour matching"}</h3><p>{isAr ? "اختبارات معملية قبل اعتماد التشغيل ومتابعة أثناء التنفيذ." : "Laboratory testing before production and monitoring during processing."}</p></article><article><span>03</span><h3>{isAr ? "الالتزام" : "On-time delivery"}</h3><p>{isAr ? "تنظيم التشغيل والتسليم ضمن المواعيد المتفق عليها." : "Production and dispatch organised around agreed timelines."}</p></article></div>
+        </section>
+
+        <section className="section faq" id="faq">
+          <div className="section-head"><p className="eyebrow" data-reveal>{t.faqKicker}</p><h2 data-reveal>{t.faqTitle}</h2></div>
+          <div className="faq-list">{FAQ.map((item) => <article key={item.qEn} data-reveal><h3>{isAr ? item.qAr : item.qEn}</h3><p>{isAr ? item.aAr : item.aEn}</p></article>)}</div>
         </section>
 
         <section className="contact" id="contact">

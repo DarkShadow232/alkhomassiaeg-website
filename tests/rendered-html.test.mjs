@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { access, readFile, readdir } from "node:fs/promises";
 import test from "node:test";
+import { brotliDecompressSync, gunzipSync } from "node:zlib";
+import { fileURLToPath } from "node:url";
 
 async function render() {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
@@ -12,6 +14,22 @@ async function render() {
     { waitUntil() {}, passThroughOnException() {} },
   );
 }
+
+test("built static scripts and styles have byte-equivalent Brotli/gzip variants", async () => {
+  const root = new URL("../dist/client/_next/static/", import.meta.url);
+  const files = await readdir(root, { recursive: true });
+  const originals = files.filter((file) => /\.(js|css)$/.test(file));
+  assert.ok(originals.some((file) => file.endsWith(".js")));
+  assert.ok(originals.some((file) => file.endsWith(".css")));
+  for (const file of originals) {
+    const url = new URL(file.replaceAll("\\", "/"), root);
+    const [original, br, gz] = await Promise.all([
+      readFile(url), readFile(`${fileURLToPath(url)}.br`), readFile(`${fileURLToPath(url)}.gz`),
+    ]);
+    assert.deepEqual(brotliDecompressSync(br), original);
+    assert.deepEqual(gunzipSync(gz), original);
+  }
+});
 
 test("server-renders the Arabic-first Concept B site", async () => {
   const response = await render();
@@ -31,6 +49,10 @@ test("server-renders the Arabic-first Concept B site", async () => {
   assert.match(html, /role="status"/);
   assert.doesNotMatch(html, /\bKor\b|\+966|info@alkhomassia\.com/i);
   assert.doesNotMatch(html, /<video\b/i);
+  assert.match(html, /class="film-poster"/);
+  assert.match(html, /tour-mobile-bdc60fe2\.webp/);
+  assert.match(html, /tour-desktop-bdc60fe2\.webp/);
+  assert.doesNotMatch(html, /fonts\.googleapis\.com|fonts\.gstatic\.com/);
 });
 
 test("ships the canvas, accessibility and responsive sequence contracts", async () => {
@@ -56,9 +78,9 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
   assert.match(client, /reducedMotion \? <div className="static-chapters"/);
   assert.match(client, /Math\.min\(2, window\.devicePixelRatio/);
   assert.match(client, /prefers-reduced-motion: reduce/);
-  assert.match(client, /hero-lockup-gold-3d-transparent\.png/);
+  assert.match(client, /hero-lockup-gold-3d-transparent\.[a-f0-9]+\.webp/);
   assert.match(client, /materials-factory-floor\.jpeg/);
-  assert.match(client, /window\.setTimeout\(\(\) => setFilmReady\(true\), 9000\)/);
+  assert.doesNotMatch(client, /setTimeout\(\(\) => setFilmReady/);
   assert.match(client, /mailto:sales@alkhomassiaeg\.com/);
   assert.match(client, /wa\.me\/201273933043/);
   assert.match(client, /ابدأ طلبك عبر واتساب/);

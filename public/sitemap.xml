@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The site is a single indexable route. The Arabic and English variants of the
+  page share one URL (the language switch is client-side state, not a route),
+  so there is no second URL to list and no hreflang pair to declare.
+  The <loc> below matches the <link rel="canonical"> emitted by app/layout.tsx
+  exactly, and is allowed by robots.txt.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.alkhomassiaeg.com/</loc>
+    <lastmod>2026-09-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
