@@ -37,6 +37,8 @@ test("server-renders the Arabic-first Concept B site", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
   assert.match(html, /<html lang="ar" dir="rtl">/);
+  assert.match(html, /<title>الخماسية للصناعات النسيجية<\/title>/);
+  assert.match(html, /\/assets\/brand\/logo-transparent\.png/);
   assert.match(html, /الخماسية للصناعات النسيجية/);
   assert.match(html, /AL KHOMASSIA FOR TEXTILE INDUSTRIES/);
   assert.match(html, /داخل الخماسية/);
@@ -56,8 +58,10 @@ test("server-renders the Arabic-first Concept B site", async () => {
 });
 
 test("ships the canvas, accessibility and responsive sequence contracts", async () => {
-  const [client, css, packageJson, generationRecord, fallbackFiles, desktopFrames, mobileFrames] = await Promise.all([
+  const [client, smoothScroll, layout, css, packageJson, generationRecord, fallbackFiles, desktopFrames, mobileFrames] = await Promise.all([
     readFile(new URL("../app/ConceptBClient.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/SmoothScroll.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readFile(new URL("../public/assets/generation-records/supplied-master-sequence.json", import.meta.url), "utf8"),
@@ -66,8 +70,11 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
     readdir(new URL("../public/assets/sequence-mobile/", import.meta.url)),
   ]);
   assert.match(client, /ScrollTrigger\.create/);
-  assert.match(client, /const SCROLL_LERP_FACTOR = 0\.12/);
-  assert.match(client, /1 - Math\.pow\(1 - SCROLL_LERP_FACTOR, elapsedFrames\)/);
+  assert.match(client, /useLenis\(\)/);
+  assert.match(client, /lenis\.on\("scroll"/);
+  assert.match(client, /ScrollTrigger\.update\(\)/);
+  assert.match(client, /const next = targetProgressRef\.current/);
+  assert.doesNotMatch(client, /window\.scrollY|window\.scrollTo|addEventListener\("scroll"|SCROLL_LERP_FACTOR/);
   assert.match(client, /if \(animationFrame\) return/);
   assert.match(client, /new ResizeObserver/);
   assert.match(client, /start: "top top"/);
@@ -78,7 +85,7 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
   assert.match(client, /reducedMotion \? <div className="static-chapters"/);
   assert.match(client, /Math\.min\(2, window\.devicePixelRatio/);
   assert.match(client, /prefers-reduced-motion: reduce/);
-  assert.match(client, /hero-lockup-gold-3d-transparent\.[a-f0-9]+\.webp/);
+  assert.match(client, /hero-lockup\.v2\.webp/);
   assert.match(client, /materials-factory-floor\.jpeg/);
   assert.doesNotMatch(client, /setTimeout\(\(\) => setFilmReady/);
   assert.match(client, /mailto:sales@alkhomassiaeg\.com/);
@@ -94,6 +101,7 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
   assert.match(client, /جاهزون لتجهيز طلبكم القادم/);
   assert.doesNotMatch(client, /مستعدون|اللفة النهائية/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(css, /html \{ scroll-behavior: auto/);
   assert.match(css, /\.film-stage \{ position: sticky/);
   assert.match(css, /--step-body: clamp\(1rem/);
   assert.match(css, /\.film canvas \{ position: absolute; inset: 0; width: 100%; height: 100%; \}/);
@@ -101,6 +109,14 @@ test("ships the canvas, accessibility and responsive sequence contracts", async 
   assert.match(css, /\.route button \{ min-height: var\(--tap\); min-width: var\(--tap\)/);
   assert.match(css, /\.materials-image \{ min-height: 0; aspect-ratio: 4 \/ 3; \}/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
+  assert.match(packageJson, /"lenis": "\^1\.3\.26"/);
+  assert.match(layout, /import "lenis\/dist\/lenis\.css"/);
+  assert.match(layout, /<SmoothScroll>\{children\}<\/SmoothScroll>/);
+  assert.match(smoothScroll, /<ReactLenis[^>]*root[^>]*options=\{options\}/);
+  assert.match(smoothScroll, /autoRaf: false/);
+  assert.match(smoothScroll, /lerp: 0\.12/);
+  assert.match(smoothScroll, /anchors: \{ offset: -96 \}/);
+  assert.match(smoothScroll, /lenisRef\.current\?\.lenis\?\.raf\(time\)/);
   assert.equal(fallbackFiles.filter((file) => /\.jpg$/i.test(file)).length, 10);
   assert.equal(desktopFrames.filter((file) => /^f\d{3}\.jpg$/i.test(file)).length, 225);
   assert.equal(mobileFrames.filter((file) => /^f\d{3}\.jpg$/i.test(file)).length, 113);

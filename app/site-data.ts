@@ -26,7 +26,7 @@ export const PHONE_DISPLAY = "+20 127 393 3043";
 export const EMAIL = "sales@alkhomassiaeg.com";
 export const WHATSAPP_URL = "https://wa.me/201273933043";
 
-export const LOGO_URL = `${SITE_URL}/assets/brand/logo.png`;
+export const LOGO_URL = `${SITE_URL}/assets/brand/logo-transparent.png`;
 export const OG_IMAGE_URL = `${SITE_URL}/assets/posters/tour-desktop-bdc60fe2.webp`;
 export const OG_IMAGE_WIDTH = 1920;
 export const OG_IMAGE_HEIGHT = 1080;

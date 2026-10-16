@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLenis } from "lenis/react";
 import { FAQ, SUMMARY } from "./site-data";
 
 type AnimationModules = {
@@ -27,9 +28,6 @@ const scenes = [
 
 const DESKTOP_FRAME_COUNT = 225;
 const MOBILE_FRAME_COUNT = 113;
-const SCROLL_LERP_FACTOR = 0.12;
-const SCROLL_SETTLE_EPSILON = 0.00015;
-const BASE_FRAME_MS = 1000 / 60;
 
 const copy = {
   ar: {
@@ -103,13 +101,14 @@ const navTargets = ["home", "film", "capabilities", "services", "quality", "cont
 function LogoLockup({ compact = false }: { compact?: boolean }) {
   return (
     <a className={`logo-lockup${compact ? " compact" : ""}`} href="#home" aria-label="الخماسية — الرئيسية">
-      <span className="brand-mark"><img src="/assets/brand/logo-transparent.56028444d2d3.webp" alt="" width={2000} height={1600} loading={compact ? "eager" : "lazy"} /></span>
+      <span className="brand-mark"><img src="/assets/brand/logo-mark.v2.webp" alt="" width={240} height={192} loading="eager" fetchPriority="high" /></span>
       <span><b>الخماسية</b><small>AL KHOMASSIA FOR TEXTILE INDUSTRIES</small></span>
     </a>
   );
 }
 
 export default function ConceptBClient() {
+  const lenis = useLenis();
   const [locale, setLocale] = useState<Locale>("ar");
   const [menuOpen, setMenuOpen] = useState(false);
   const [headerHidden, setHeaderHidden] = useState(false);
@@ -153,39 +152,59 @@ export default function ConceptBClient() {
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  /* One rAF-throttled scroll pass drives the header state, the page progress
-     bar and the section scrollspy, so navigation always reflects the viewport. */
+  /* Lenis emits once per smoothed frame, so all global scroll-derived UI reads
+     the same animated scroll position instead of subscribing to native scroll. */
   useEffect(() => {
-    let last = window.scrollY;
-    let frame = 0;
-    const measure = () => {
-      frame = 0;
-      const y = window.scrollY;
-      const limit = document.documentElement.scrollHeight - window.innerHeight;
+    if (!lenis) return;
+    let last = lenis.scroll;
+
+    /* Layout-dependent values are read ONCE here and refreshed only on
+       resize / content growth — never inside the per-frame scroll handler.
+       With syncTouch on, `scroll` fires ~60fps on mobile, so keeping the hot
+       path free of scrollHeight / getComputedStyle / offsetTop reads is what
+       prevents layout thrashing while the finger drags. */
+    let limit = 0;
+    let headerOffset = 90;
+    const targetOffsets: number[] = [];
+    const recompute = () => {
+      limit = document.documentElement.scrollHeight - window.innerHeight;
+      headerOffset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-h") || "78") + 12;
+      targetOffsets.length = 0;
+      navTargets.forEach((id) => {
+        targetOffsets.push(document.getElementById(id)?.offsetTop ?? Infinity);
+      });
+    };
+
+    const measure = (y: number) => {
       const ratio = limit > 0 ? Math.min(1, Math.max(0, y / limit)) : 0;
       if (pageBarRef.current) pageBarRef.current.style.transform = `scaleX(${ratio})`;
       setScrolled(y > 12);
       setHeaderHidden(y > last && y > 240 && !menuOpen);
       last = y;
 
-      const line = y + parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-h") || "78") + 12;
+      const line = y + headerOffset;
       let current = 0;
-      navTargets.forEach((id, index) => {
-        const node = document.getElementById(id);
-        if (node && node.offsetTop <= line) current = index;
-      });
+      for (let i = 0; i < targetOffsets.length; i += 1) {
+        if (targetOffsets[i] <= line) current = i;
+      }
       setActiveNav(current);
     };
-    const onScroll = () => { if (!frame) frame = window.requestAnimationFrame(measure); };
-    measure();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
+
+    recompute();
+    measure(lenis.scroll);
+    const stopListening = lenis.on("scroll", (state) => measure(state.scroll));
+    const onResize = () => { recompute(); measure(lenis.scroll); };
+    window.addEventListener("resize", onResize, { passive: true });
+    // Content height changes as the film sequence / images load — refresh the
+    // cached limit and section offsets without touching the scroll hot path.
+    const ro = new ResizeObserver(() => { recompute(); measure(lenis.scroll); });
+    ro.observe(document.body);
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      if (frame) window.cancelAnimationFrame(frame);
+      stopListening();
+      window.removeEventListener("resize", onResize);
+      ro.disconnect();
     };
-  }, [menuOpen]);
+  }, [lenis, menuOpen]);
 
   /* Progressive reveal for section content — inert when reduced motion is on. */
   useEffect(() => {
@@ -210,6 +229,9 @@ export default function ConceptBClient() {
   useEffect(() => {
     if (!menuOpen) return;
     document.body.classList.add("menu-open");
+    // Freeze Lenis so a touch-drag over the overlay can't scroll the page
+    // behind it; the menu itself scrolls natively (data-lenis-prevent).
+    lenis?.stop();
     const root = menuRef.current;
     const focusable = root?.querySelectorAll<HTMLElement>("a,button");
     focusable?.[0]?.focus();
@@ -229,11 +251,12 @@ export default function ConceptBClient() {
     return () => {
       document.body.classList.remove("menu-open");
       document.removeEventListener("keydown", onKey);
+      lenis?.start();
     };
-  }, [menuOpen]);
+  }, [menuOpen, lenis]);
 
   useEffect(() => {
-    if (reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!lenis || reducedMotion || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const mobile = window.matchMedia("(max-width: 760px)").matches;
     const frameCount = mobile ? MOBILE_FRAME_COUNT : DESKTOP_FRAME_COUNT;
     const sequence = mobile ? "sequence-mobile" : "sequence-desktop";
@@ -313,7 +336,7 @@ export default function ConceptBClient() {
       const film = filmRef.current;
       if (film) {
         const distance = film.offsetHeight - window.innerHeight;
-        initialIndex = Math.round(Math.min(1, Math.max(0, distance > 0 ? (window.scrollY - film.offsetTop) / distance : 0)) * (frameCount - 1));
+        initialIndex = Math.round(Math.min(1, Math.max(0, distance > 0 ? (lenis.scroll - film.offsetTop) / distance : 0)) * (frameCount - 1));
       }
       void Promise.all([import("gsap"), import("gsap/ScrollTrigger")]).then(([gsapModule, triggerModule]) => {
         if (disposed) return;
@@ -343,7 +366,7 @@ export default function ConceptBClient() {
       window.removeEventListener("load", start);
       loaded.forEach((image) => { image.onload = null; image.onerror = null; });
     };
-  }, [reducedMotion, loadAttempt]);
+  }, [reducedMotion, loadAttempt, lenis]);
 
   function drawFrame(index: number, source = imagesRef.current) {
     const canvas = canvasRef.current;
@@ -365,11 +388,10 @@ export default function ConceptBClient() {
   }
 
   useEffect(() => {
-    if (!filmReady || !animation || reducedMotion || !filmRef.current) return;
+    if (!filmReady || !animation || reducedMotion || !filmRef.current || !lenis) return;
     const { gsap, ScrollTrigger } = animation;
     gsap.registerPlugin(ScrollTrigger);
     let animationFrame = 0;
-    let lastTimestamp = 0;
 
     /* Canvas geometry is measured only when its size changes. The hot render
        loop below performs no layout reads, which avoids forced reflow while
@@ -388,17 +410,11 @@ export default function ConceptBClient() {
       return true;
     };
 
-    const renderProgress = (timestamp: number) => {
-      const current = progressRef.current;
-      const target = targetProgressRef.current;
-      const delta = target - current;
-      const elapsedFrames = lastTimestamp
-        ? Math.min(3, Math.max(0.25, (timestamp - lastTimestamp) / BASE_FRAME_MS))
-        : 1;
-      const lerp = 1 - Math.pow(1 - SCROLL_LERP_FACTOR, elapsedFrames);
-      const settled = Math.abs(delta) < SCROLL_SETTLE_EPSILON;
-      const next = settled ? target : current + delta * lerp;
-      lastTimestamp = timestamp;
+    /* Lenis already interpolates the scroll position. Render its normalized
+       progress directly to avoid adding a second lagging lerp in the film. */
+    const renderProgress = () => {
+      animationFrame = 0;
+      const next = targetProgressRef.current;
       progressRef.current = next;
 
       const frameIndex = Math.min(imagesRef.current.length - 1, Math.round(next * (imagesRef.current.length - 1)));
@@ -409,22 +425,15 @@ export default function ConceptBClient() {
       }
       if (filmBarRef.current) filmBarRef.current.style.transform = `scaleX(${next})`;
       drawFrame(frameIndex);
-
-      if (settled) {
-        animationFrame = 0;
-        lastTimestamp = 0;
-      } else {
-        animationFrame = window.requestAnimationFrame(renderProgress);
-      }
     };
 
     const queueRender = () => {
       if (animationFrame) return;
-      lastTimestamp = 0;
       animationFrame = window.requestAnimationFrame(renderProgress);
     };
 
     syncCanvasSize();
+    const stopListening = lenis.on("scroll", () => ScrollTrigger.update());
 
     const trigger = ScrollTrigger.create({
       trigger: filmRef.current,
@@ -446,19 +455,20 @@ export default function ConceptBClient() {
     });
     if (canvasRef.current) resizeObserver.observe(canvasRef.current);
     return () => {
+      stopListening();
       resizeObserver.disconnect();
       if (animationFrame) window.cancelAnimationFrame(animationFrame);
       trigger.kill();
     };
-  }, [filmReady, animation, reducedMotion]);
+  }, [filmReady, animation, reducedMotion, lenis]);
 
   const jumpToScene = useCallback((index: number) => {
     const film = filmRef.current;
-    if (!film) return;
+    if (!film || !lenis) return;
     const start = film.offsetTop;
     const distance = film.offsetHeight - window.innerHeight;
-    window.scrollTo({ top: start + distance * (index / (scenes.length - 1)), behavior: reducedMotion ? "auto" : "smooth" });
-  }, [reducedMotion]);
+    lenis.scrollTo(start + distance * (index / (scenes.length - 1)), { immediate: reducedMotion });
+  }, [lenis, reducedMotion]);
 
   const closeMenu = () => { setMenuOpen(false); menuButtonRef.current?.focus(); };
 
@@ -483,7 +493,7 @@ export default function ConceptBClient() {
         <div className="header-progress" aria-hidden="true"><span ref={pageBarRef} /></div>
       </header>
 
-      {menuOpen && <div className="mobile-menu" id="mobile-menu" ref={menuRef} role="dialog" aria-modal="true" aria-label={t.menu}>
+      {menuOpen && <div className="mobile-menu" id="mobile-menu" ref={menuRef} data-lenis-prevent role="dialog" aria-modal="true" aria-label={t.menu}>
         <nav aria-label={isAr ? "التنقل الرئيسي" : "Primary navigation"}>
           {t.nav.map((item, index) => (
             <a key={item} href={`#${navTargets[index]}`} aria-current={activeNav === index ? "true" : undefined} onClick={() => setMenuOpen(false)}>
@@ -516,7 +526,7 @@ export default function ConceptBClient() {
           <h1 className="sr-only" id="hero-title">{t.topic} — {t.hero}</h1>
           <div className="hero-emblem" aria-hidden="true">
             <img
-              src="/assets/brand/hero-lockup-gold-3d-transparent.5b6bb7feac96.webp"
+              src="/assets/brand/hero-lockup.v2.webp"
               alt=""
               width={651}
               height={527}

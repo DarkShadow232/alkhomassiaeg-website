@@ -76,7 +76,7 @@
    Base
    ============================================================ */
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; background: var(--paper); -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--header-h) + 18px); }
+html { scroll-behavior: auto; background: var(--paper); -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--header-h) + 18px); }
 body {
   margin: 0;
   background: var(--paper);
@@ -89,6 +89,13 @@ body {
 }
 [dir="ltr"] body { font-family: var(--font-latin); }
 body.menu-open { overflow: hidden; }
+
+/* Anchored sections clear the fixed header for keyboard focus and native
+   (no-JS / reduced-motion) anchor jumps; Lenis anchors carry their own offset. */
+main > section[id] { scroll-margin-top: calc(var(--header-h) + 12px); }
+
+/* Keep CSS smooth-scroll from ever fighting Lenis's own interpolation. */
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
 ::selection { background: var(--gold); color: #fff; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }

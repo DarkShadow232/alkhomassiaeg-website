@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import "lenis/dist/lenis.css";
 import "./globals.css";
+import SmoothScroll from "./SmoothScroll";
 import {
   CANONICAL_URL,
   OG_IMAGE_HEIGHT,
@@ -14,8 +16,8 @@ import { serializeJsonLd, siteGraph } from "./structured-data";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `صباغة وتجهيز الأقمشة | ${ORG_NAME_AR}`,
-    template: "%s | الخماسية",
+    default: ORG_NAME_AR,
+    template: `%s | ${ORG_NAME_AR}`,
   },
   description:
     "مصنع صباغة وتجهيز الأقمشة القطنية والبوليستر والممزوجة في العاشر من رمضان، مصر. خبرة تتجاوز 45 عاماً وطاقة إنتاجية تتجاوز 600 طن شهرياً.",
@@ -58,14 +60,17 @@ export const metadata: Metadata = {
       "مصنع مصري لصباغة وتجهيز الأقمشة القطنية والبوليستر والممزوجة، بطاقة تتجاوز 600 طن شهرياً.",
     images: [OG_IMAGE_URL],
   },
-  icons: { icon: "/assets/brand/logo.png" },
+  icons: {
+    icon: [{ url: "/assets/brand/logo-transparent.png", type: "image/png" }],
+    shortcut: "/assets/brand/logo-transparent.png",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body>
-        {children}
+        <SmoothScroll>{children}</SmoothScroll>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(siteGraph) }}
